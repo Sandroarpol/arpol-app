@@ -1,372 +1,424 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARPOL - Sistema de Gestão e Almoxarifado</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --primary: #0F5132;
-      --primary-hover: #0b3d26;
-      --primary-light: #e8f5e9;
-      --bg: #f4f6f8;
-      --card-bg: #ffffff;
-      --text: #212529;
-      --text-muted: #6c757d;
-      --border: #dee2e6;
-      --danger: #dc3545;
-      --success: #198754;
-      --warning: #ffc107;
-      --radius: 8px;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    }
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    .status-bar {
-      background: #e8f5e9;
-      border-bottom: 1px solid #c8e6c9;
-      color: #2e7d32;
-      padding: 10px 24px;
-      font-size: 13px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    header {
-      background: white;
-      border-bottom: 1px solid var(--border);
-      padding: 14px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .logo-badge {
-      background: var(--primary);
-      color: white;
-      font-weight: 800;
-      font-size: 16px;
-      padding: 6px 12px;
-      border-radius: var(--radius);
-      letter-spacing: 1px;
-    }
-    .logo-text {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .user-badge {
-      background: var(--primary-light);
-      color: var(--primary);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 13px;
-    }
-    .main-nav {
-      background: white;
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      display: flex;
-      gap: 24px;
-    }
-    .nav-tab {
-      padding: 14px 6px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--text-muted);
-      border-bottom: 3px solid transparent;
-      user-select: none;
-      transition: all 0.2s;
-    }
-    .nav-tab.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
-    .content-container {
-      max-width: 1200px;
-      width: 100%;
-      margin: 24px auto;
-      padding: 0 20px;
-      flex: 1;
-    }
-    .section-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .form-panel {
-      background: #f8fafc;
-      border: 1px solid #cbd5e1;
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 20px;
-      display: none;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    .form-group {
-      text-align: left;
-    }
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 6px;
-      color: var(--text);
-    }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 14px;
-      outline: none;
-      background: white;
-    }
-    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      border-color: var(--primary);
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: var(--radius);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .btn:hover {
-      background: var(--primary-hover);
-    }
-    .btn-secondary {
-      background: #6c757d;
-    }
-    .btn-secondary:hover {
-      background: #5a6268;
-    }
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 13px;
-    }
-    .table-responsive {
-      overflow-x: auto;
-      margin-top: 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-      text-align: left;
-    }
-    th, td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-    th {
-      background-color: #f8f9fa;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-    tr:last-child td {
-      border-bottom: none;
-    }
-    tr:hover {
-      background-color: #fafafa;
-    }
-    .stock-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-weight: 600;
-      font-size: 12px;
-    }
-    .stock-ok { background: #d1e7dd; color: #0f5132; }
-    .stock-low { background: #fff3cd; color: #664d03; }
-    .stock-empty { background: #f8d7da; color: #842029; }
-    .action-btns {
-      display: flex;
-      gap: 6px;
-    }
-    .loading-notice {
-      padding: 20px;
-      text-align: center;
-      color: var(--text-muted);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARPOL - Sistema de Gestão e Almoxarifado</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #0F5132;
+            --primary-hover: #0b3d26;
+            --primary-light: #e8f5e9;
+            --bg: #f4f6f8;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --text-muted: #6c757d;
+            --border: #dee2e6;
+            --danger: #dc3545;
+            --success: #198754;
+            --warning: #ffc107;
+            --radius: 8px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 60px;
+        }
+        .status-bar {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-img {
+            height: 40px;
+            width: auto;
+            object-fit: contain;
+            background: #ffffff;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .user-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .content-container {
+            max-width: 1100px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+        .main-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+        }
+        .nav-tab {
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            user-select: none;
+        }
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-add:hover { background: var(--primary-hover); }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th {
+            background: #f8f9fa;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 10px 12px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f3f5;
+            vertical-align: middle;
+        }
+        .badge-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-estoque { background: #d1e7dd; color: #0f5132; }
+        .badge-baixo { background: #fff3cd; color: #664d03; }
+        .badge-esgotado { background: #f8d7da; color: #842029; }
+        .btn-action {
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: #0f5132;
+            color: white;
+            margin-right: 4px;
+        }
+        .btn-action.out { background: #495057; }
+    </style>
 </head>
 <body>
 
-  <div class="status-bar">
-    <span>✅ <strong>Acesso Direto ARPOL:</strong> Sandro Ricardo (Administrador)</span>
-    <span id="sync-status">🔄 Conectando à nuvem...</span>
-  </div>
-
-  <header>
-    <div class="logo-container">
-      <img src="logo-oficial.jpg" alt="ARPOL" style="height: 40px; width: auto; object-fit: contain; background: #ffffff; padding: 2px 4px; border-radius: 4px;">
-      <div class="logo-text">Almoxarifado & Relatórios</div>
+    <div class="status-bar">
+        <span>✅ <strong>Acesso Direto ARPOL:</strong> Sandro Ricardo (Administrador)</span>
+        <span id="sync-status">🟢 Almoxarifado Conectado</span>
     </div>
-    <div class="header-user-info">
-      <span class="user-badge">sandro.ricardo@arpolar.com.br</span>
-    </div>
-  </header>
 
-  <nav class="main-nav">
-    <div class="nav-tab active" id="tab-btn-estoque">📦 Estoque & Almoxarifado</div>
-    <div class="nav-tab" id="tab-btn-relatorios">📋 Relatórios Operacionais</div>
-  </nav>
+    <header>
+        <div class="logo-container">
+            <img src="logo-oficial.jpg" alt="ARPOL" class="logo-img">
+            <div class="logo-text">Almoxarifado & Relatórios</div>
+        </div>
+        <div class="header-user-info">
+            <span class="user-badge">sandro.ricardo@arpolar.com.br</span>
+        </div>
+    </header>
 
-  <div class="content-container">
-    <div id="pane-estoque" class="tab-pane">
-      <div class="section-card">
-        <div class="section-header">
-          <h3 class="section-title">Movimentação de Peças & Materiais</h3>
-          <button class="btn" id="btn-toggle-novo-item">+ Novo Item</button>
+    <div class="content-container">
+        <div class="main-nav">
+            <div class="nav-tab active" id="tab-btn-estoque" onclick="alternarAba('estoque')">📦 Estoque & Almoxarifado</div>
+            <div class="nav-tab" id="tab-btn-relatorios" onclick="alternarAba('relatorios')">📋 Relatórios Operacionais</div>
         </div>
 
-        <div class="form-panel" id="form-novo-item">
-          <h4 style="margin-bottom: 14px; font-size: 15px; color: var(--primary);">Cadastrar Peça / Material no Almoxarifado</h4>
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="novo-codigo">Código / Referência</label>
-              <input type="text" id="novo-codigo" placeholder="Ex: GAS-R410">
+        <!-- ABA 1: ESTOQUE E ALMOXARIFADO -->
+        <div id="pane-estoque" class="tab-pane">
+            <div class="section-card">
+                <div class="card-header">
+                    <h2>Movimentação de Peças & Almoxarifado</h2>
+                    <button class="btn-add" onclick="adicionarNovoItem()">+ Novo Item</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição do Material</th>
+                            <th>Quantidade</th>
+                            <th>Unidade</th>
+                            <th>Estado</th>
+                            <th>Ações de Entrada / Saída</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-corpo"></tbody>
+                </table>
             </div>
-            <div class="form-group">
-              <label for="nova-descricao">Descrição da Peça</label>
-              <input type="text" id="nova-descricao" placeholder="Ex: Botija R410A 11,3kg">
-            </div>
-            <div class="form-group">
-              <label for="novo-qtd">Quantidade em Estoque</label>
-              <input type="number" id="novo-qtd" value="10" min="0">
-            </div>
-            <div class="form-group">
-              <label for="nova-unidade">Unidade</label>
-              <select id="nova-unidade">
-                <option value="UN">Unidade (UN)</option>
-                <option value="PC">Peça (PC)</option>
-                <option value="KG">Kg (KG)</option>
-                <option value="MT">Metros (MT)</option>
-              </select>
-            </div>
-          </div>
-          <div style="display: flex; gap: 10px;">
-            <button class="btn btn-sm" id="btn-salvar-item">Salvar no Almoxarifado</button>
-            <button class="btn btn-secondary btn-sm" id="btn-cancelar-item">Fechar</button>
-          </div>
         </div>
 
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Descrição do Material</th>
-                <th>Quantidade</th>
-                <th>Unidade</th>
-                <th>Estado</th>
-                <th>Ações de Entrada / Saída</th>
-              </tr>
-            </thead>
-            <tbody id="tabela-estoque-body">
-              <tr><td colspan="6" class="loading-notice">Carregando estoque da nuvem...</td></tr>
-            </tbody>
-          </table>
+        <!-- ABA 2: RELATÓRIOS OPERACIONAIS (PEÇAS E FLUXO) -->
+        <div id="pane-relatorios" class="tab-pane" style="display: none;">
+            <!-- Peças Abaixo do Mínimo -->
+            <div class="section-card" style="border-left: 4px solid var(--danger);">
+                <h3 style="color: var(--danger); margin-bottom: 12px;">⚠️ Peças Abaixo do Estoque Mínimo (Reposição Urgente)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descrição da Peça</th>
+                            <th style="text-align: center;">Qtd Atual</th>
+                            <th style="text-align: center;">Estoque Mínimo</th>
+                            <th style="text-align: center;">Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-estoque-critico"></tbody>
+                </table>
+            </div>
+
+            <!-- Histórico de Entradas e Saídas -->
+            <div class="section-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <h3 style="color: var(--primary);">📋 Histórico de Movimentações (Entradas e Saídas)</h3>
+                    <span style="font-size: 12px; color: var(--text-muted);">Registro automático de fluxo de materiais</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data / Hora</th>
+                            <th>Tipo</th>
+                            <th>Código</th>
+                            <th>Descrição</th>
+                            <th style="text-align: center;">Quantidade</th>
+                            <th>Responsável</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-historico-movimentacoes"></tbody>
+                </table>
+            </div>
         </div>
-      </div>
     </div>
 
-   <div id="pane-relatorios" class="tab-pane" style="display: none;">
-    <!-- Alertas de Estoque Mínimo -->
-    <div class="section-card" style="margin-bottom: 20px; border-left: 4px solid var(--danger);">
-        <h3 style="color: var(--danger); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-            ⚠️ Peças Abaixo do Estoque Mínimo (Reposição Urgente)
-        </h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <thead>
-                <tr style="background: #f8f9fa; border-bottom: 2px solid var(--border);">
-                    <th style="padding: 8px; text-align: left;">Código</th>
-                    <th style="padding: 8px; text-align: left;">Descrição da Peça</th>
-                    <th style="padding: 8px; text-align: center;">Qtd Atual</th>
-                    <th style="padding: 8px; text-align: center;">Mínimo</th>
-                    <th style="padding: 8px; text-align: center;">Situação</th>
-                </tr>
-            </thead>
-            <tbody id="lista-estoque-critico">
-                <!-- Preenchido via JavaScript -->
-            </tbody>
-        </table>
-    </div>
+    <script>
+        const itensIniciais = [
+            { cod: "GAS-R410A", desc: "Gás Refrigerante R410A - Botija 11,3kg", qtd: 11, un: "UN" },
+            { cod: "CAP-45UF", desc: "Capacitor 45uF 440VAC Duplo", qtd: 16, un: "PC" },
+            { cod: "TUB-12", desc: "Tubo de Cobre 1/2 flexível", qtd: 30, un: "MT" },
+            { cod: "VALV-01", desc: "Válvula de Expansão Termostática", qtd: 0, un: "PC" },
+            { cod: "TERM-DIG", desc: "Termômetro Penta Digital", qtd: 2, un: "UN" }
+        ];
 
-    <!-- Histórico de Entradas e Saídas -->
-    <div class="section-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-            <h3 style="color: var(--primary);">📋 Histórico de Movimentações (Entradas e Saídas)</h3>
-            <span style="font-size: 12px; color: var(--text-muted);">Registro automático de fluxo de materiais</span>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <thead>
-                <tr style="background: #f8f9fa; border-bottom: 2px solid var(--border);">
-                    <th style="padding: 8px; text-align: left;">Data / Hora</th>
-                    <th style="padding: 8px; text-align: left;">Tipo</th>
-                    <th style="padding: 8px; text-align: left;">Código</th>
-                    <th style="padding: 8px; text-align: left;">Descrição</th>
-                    <th style="padding: 8px; text-align: center;">Quantidade</th>
-                    <th style="padding: 8px; text-align: left;">Responsável</th>
-                </tr>
-            </thead>
-            <tbody id="lista-historico-movimentacoes">
-                <!-- Preenchido via JavaScript -->
-            </tbody>
-        </table>
-    </div>
-</div>
+        let estoque = JSON.parse(localStorage.getItem('arpol_estoque_db')) || itensIniciais;
+
+        function salvarEstoque() {
+            localStorage.setItem('arpol_estoque_db', JSON.stringify(estoque));
+            renderizarTabela();
+            atualizarRelatorioPecas();
+        }
+
+        function registrarHistorico(tipo, cod, desc, qtd) {
+            let historico = JSON.parse(localStorage.getItem('arpol_historico_movimentos') || '[]');
+            const agora = new Date();
+            const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+            historico.push({
+                dataHora: dataHora,
+                tipo: tipo,
+                cod: cod,
+                desc: desc,
+                qtd: qtd,
+                usuario: 'Sandro Ricardo'
+            });
+            localStorage.setItem('arpol_historico_movimentos', JSON.stringify(historico));
+        }
+
+        function alterarQuantidade(index, delta) {
+            const item = estoque[index];
+            if (delta < 0 && item.qtd <= 0) return;
+            
+            item.qtd += delta;
+            registrarHistorico(delta > 0 ? 'ENTRADA' : 'SAÍDA', item.cod, item.desc, Math.abs(delta));
+            salvarEstoque();
+        }
+
+        function adicionarNovoItem() {
+            const cod = prompt("Código do Material (Ex: FILT-01):");
+            if (!cod) return;
+            const desc = prompt("Descrição do Material:");
+            if (!desc) return;
+            const qtdStr = prompt("Quantidade inicial:", "1");
+            const qtd = parseInt(qtdStr || "0");
+            const un = prompt("Unidade de Medida (UN, PC, MT, KG):", "UN") || "UN";
+
+            const novo = { cod: cod.toUpperCase(), desc: desc, qtd: isNaN(qtd) ? 0 : qtd, un: un.toUpperCase() };
+            estoque.push(novo);
+            registrarHistorico('ENTRADA (CADASTRO)', novo.cod, novo.desc, novo.qtd);
+            salvarEstoque();
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabela-corpo');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            estoque.forEach((item, index) => {
+                let badgeClass = 'badge-estoque';
+                let statusTexto = 'Em Estoque';
+
+                if (item.qtd === 0) {
+                    badgeClass = 'badge-esgotado';
+                    statusTexto = 'Esgotado';
+                } else if (item.qtd <= 3) {
+                    badgeClass = 'badge-baixo';
+                    statusTexto = 'Baixo Estoque';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${item.cod}</strong></td>
+                    <td>${item.desc}</td>
+                    <td><strong>${item.qtd}</strong></td>
+                    <td>${item.un}</td>
+                    <td><span class="badge-status ${badgeClass}">${statusTexto}</span></td>
+                    <td>
+                        <button class="btn-action" onclick="alterarQuantidade(${index}, 1)">+1 Entrada</button>
+                        <button class="btn-action out" onclick="alterarQuantidade(${index}, -1)">-1 Saída</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function atualizarRelatorioPecas() {
+            const tabelaCriticos = document.getElementById('lista-estoque-critico');
+            const tabelaMovimentos = document.getElementById('lista-historico-movimentacoes');
+            if (!tabelaCriticos || !tabelaMovimentos) return;
+
+            // 1. Peças abaixo do mínimo (3 unidades ou zeradas)
+            const criticos = estoque.filter(item => Number(item.qtd) <= 3);
+            if (criticos.length === 0) {
+                tabelaCriticos.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 14px; color: #198754; font-weight: 600;">✅ Nenhum item abaixo do estoque mínimo. Todos os níveis estão regulares.</td></tr>';
+            } else {
+                tabelaCriticos.innerHTML = criticos.map(item => `
+                    <tr>
+                        <td><strong>${item.cod}</strong></td>
+                        <td>${item.desc}</td>
+                        <td style="text-align: center; color: var(--danger); font-weight: bold;">${item.qtd} ${item.un}</td>
+                        <td style="text-align: center;">3 ${item.un}</td>
+                        <td style="text-align: center;">
+                            <span class="badge-status ${item.qtd == 0 ? 'badge-esgotado' : 'badge-baixo'}">
+                                ${item.qtd == 0 ? 'ZERADO' : 'BAIXO ESTOQUE'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // 2. Histórico de movimentações
+            const historico = JSON.parse(localStorage.getItem('arpol_historico_movimentos') || '[]');
+            if (historico.length === 0) {
+                tabelaMovimentos.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 14px; color: #6c757d;">Nenhuma movimentação registrada recentemente.</td></tr>';
+            } else {
+                tabelaMovimentos.innerHTML = historico.slice(-20).reverse().map(m => `
+                    <tr>
+                        <td style="color: #6c757d; font-size: 12px;">${m.dataHora}</td>
+                        <td>
+                            <span class="badge-status ${m.tipo.includes('ENTRADA') ? 'badge-estoque' : 'badge-esgotado'}">
+                                ${m.tipo}
+                            </span>
+                        </td>
+                        <td><strong>${m.cod}</strong></td>
+                        <td>${m.desc}</td>
+                        <td style="text-align: center; font-weight: bold;">${m.qtd}</td>
+                        <td style="font-size: 12px;">${m.usuario}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function alternarAba(aba) {
+            const paneEstoque = document.getElementById('pane-estoque');
+            const paneRel = document.getElementById('pane-relatorios');
+            const btnEstoque = document.getElementById('tab-btn-estoque');
+            const btnRel = document.getElementById('tab-btn-relatorios');
+
+            if (aba === 'estoque') {
+                paneEstoque.style.display = 'block';
+                paneRel.style.display = 'none';
+                btnEstoque.classList.add('active');
+                btnRel.classList.remove('active');
+            } else {
+                paneEstoque.style.display = 'none';
+                paneRel.style.display = 'block';
+                btnEstoque.classList.remove('active');
+                btnRel.classList.add('active');
+                atualizarRelatorioPecas();
+            }
+        }
+
+        renderizarTabela();
+        atualizarRelatorioPecas();
+    </script>
+</body>
+</html>
