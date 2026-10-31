@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARPOL - Sistema de Gestão e Almoxarifado</title>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #0F5132;
@@ -190,7 +189,9 @@
             background: #0f5132;
             color: white;
             margin-right: 4px;
+            transition: opacity 0.2s;
         }
+        .btn-action:hover { opacity: 0.85; }
         .btn-action.out { background: #495057; }
     </style>
 </head>
@@ -198,7 +199,7 @@
 
     <div class="top-status">
         <div>✅ Acesso Direto ARPOL: Sandro Ricardo (Administrador)</div>
-        <div>🟢 Sincronizado com Supabase</div>
+        <div>🟢 Banco de Estoque Ativo</div>
     </div>
 
     <header>
@@ -220,7 +221,7 @@
         <div class="card">
             <div class="card-header">
                 <h2>Movimentação de Peças & Materiais</h2>
-                <button class="btn-add">+ Novo Item</button>
+                <button class="btn-add" onclick="adicionarNovoItem()">+ Novo Item</button>
             </div>
 
             <table>
@@ -234,66 +235,78 @@
                         <th>Ações de Entrada / Saída</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>GAS-R410A</strong></td>
-                        <td>Gás Refrigerante R410A - Botija 11,3kg</td>
-                        <td><strong>11</strong></td>
-                        <td>UN</td>
-                        <td><span class="badge-status badge-estoque">Em Estoque</span></td>
-                        <td>
-                            <button class="btn-action">+1 Entrada</button>
-                            <button class="btn-action out">-1 Saída</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>CAP-45UF</strong></td>
-                        <td>Capacitor 45uF 440VAC Duplo</td>
-                        <td><strong>16</strong></td>
-                        <td>PC</td>
-                        <td><span class="badge-status badge-estoque">Em Estoque</span></td>
-                        <td>
-                            <button class="btn-action">+1 Entrada</button>
-                            <button class="btn-action out">-1 Saída</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>TUB-12</strong></td>
-                        <td>Tubo de Cobre 1/2 flexível</td>
-                        <td><strong>30</strong></td>
-                        <td>MT</td>
-                        <td><span class="badge-status badge-estoque">Em Estoque</span></td>
-                        <td>
-                            <button class="btn-action">+1 Entrada</button>
-                            <button class="btn-action out">-1 Saída</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>VALV-01</strong></td>
-                        <td>Válvula de Expansão Termostática</td>
-                        <td><strong>0</strong></td>
-                        <td>PC</td>
-                        <td><span class="badge-status badge-esgotado">Esgotado</span></td>
-                        <td>
-                            <button class="btn-action">+1 Entrada</button>
-                            <button class="btn-action out">-1 Saída</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>TERM-DIG</strong></td>
-                        <td>Termômetro Penta Digital</td>
-                        <td><strong>2</strong></td>
-                        <td>UN</td>
-                        <td><span class="badge-status badge-baixo">Baixo Estoque</span></td>
-                        <td>
-                            <button class="btn-action">+1 Entrada</button>
-                            <button class="btn-action out">-1 Saída</button>
-                        </td>
-                    </tr>
-                </tbody>
+                <tbody id="tabela-corpo"></tbody>
             </table>
         </div>
     </div>
 
+    <script>
+        const itensIniciais = [
+            { cod: "GAS-R410A", desc: "Gás Refrigerante R410A - Botija 11,3kg", qtd: 11, un: "UN" },
+            { cod: "CAP-45UF", desc: "Capacitor 45uF 440VAC Duplo", qtd: 16, un: "PC" },
+            { cod: "TUB-12", desc: "Tubo de Cobre 1/2 flexível", qtd: 30, un: "MT" },
+            { cod: "VALV-01", desc: "Válvula de Expansão Termostática", qtd: 0, un: "PC" },
+            { cod: "TERM-DIG", desc: "Termômetro Penta Digital", qtd: 2, un: "UN" }
+        ];
+
+        let estoque = JSON.parse(localStorage.getItem('arpol_estoque_db')) || itensIniciais;
+
+        function salvarEstoque() {
+            localStorage.setItem('arpol_estoque_db', JSON.stringify(estoque));
+            renderizarTabela();
+        }
+
+        function alterarQuantidade(index, delta) {
+            estoque[index].qtd += delta;
+            if (estoque[index].qtd < 0) estoque[index].qtd = 0;
+            salvarEstoque();
+        }
+
+        function adicionarNovoItem() {
+            const cod = prompt("Código do Material (Ex: FILT-01):");
+            if (!cod) return;
+            const desc = prompt("Descrição do Material:");
+            if (!desc) return;
+            const qtd = parseInt(prompt("Quantidade inicial:", "1") || "0");
+            const un = prompt("Unidade de Medida (UN, PC, MT, KG):", "UN") || "UN";
+
+            estoque.push({ cod: cod.toUpperCase(), desc, qtd: isNaN(qtd) ? 0 : qtd, un: un.toUpperCase() });
+            salvarEstoque();
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabela-corpo');
+            tbody.innerHTML = '';
+
+            estoque.forEach((item, index) => {
+                let badgeClass = 'badge-estoque';
+                let statusTexto = 'Em Estoque';
+
+                if (item.qtd === 0) {
+                    badgeClass = 'badge-esgotado';
+                    statusTexto = 'Esgotado';
+                } else if (item.qtd <= 3) {
+                    badgeClass = 'badge-baixo';
+                    statusTexto = 'Baixo Estoque';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${item.cod}</strong></td>
+                    <td>${item.desc}</td>
+                    <td><strong>${item.qtd}</strong></td>
+                    <td>${item.un}</td>
+                    <td><span class="badge-status ${badgeClass}">${statusTexto}</span></td>
+                    <td>
+                        <button class="btn-action" onclick="alterarQuantidade(${index}, 1)">+1 Entrada</button>
+                        <button class="btn-action out" onclick="alterarQuantidade(${index}, -1)">-1 Saída</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        renderizarTabela();
+    </script>
 </body>
 </html>
