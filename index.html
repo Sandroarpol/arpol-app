@@ -269,13 +269,19 @@
       display: flex;
       gap: 6px;
     }
+    
+    .loading-notice {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
 
   <div class="status-bar">
     <span>✅ <strong>Acesso Direto ARPOL:</strong> Ligado como Sandro Ricardo (Administrador)</span>
-    <span>Base de Dados: Supabase Pronta</span>
+    <span id="sync-status">🔄 Sincronizando com Supabase...</span>
   </div>
 
   <header>
@@ -348,6 +354,7 @@
               </tr>
             </thead>
             <tbody id="tabela-estoque-body">
+              <tr><td colspan="6" class="loading-notice">Carregando itens do banco de dados...</td></tr>
             </tbody>
           </table>
         </div>
@@ -397,6 +404,7 @@
               </tr>
             </thead>
             <tbody id="tabela-relatorios-body">
+              <tr><td colspan="5" class="loading-notice">Carregando relatórios...</td></tr>
             </tbody>
           </table>
         </div>
@@ -406,22 +414,24 @@
   </div>
 
   <script>
-    // Peças predefinidas da ARPOL para inicialização
-    const itensIniciais = [
-      { id: 1, codigo: "GAS-R410A", descricao: "Gás Refrigerante R410A - Botija 11,3kg", qtd: 8, unidade: "UN" },
-      { id: 2, codigo: "CAP-45UF", descricao: "Capacitor 45uF 440VAC Duplo", qtd: 15, unidade: "PC" },
-      { id: 3, codigo: "TUB-12", descricao: "Tubo de Cobre 1/2 flexível", qtd: 30, unidade: "MT" },
-      { id: 4, codigo: "VALV-01", descricao: "Válvula de Expansão Termostática", qtd: 3, unidade: "PC" },
-      { id: 5, codigo: "TERM-DIG", descricao: "Termômetro Penta Digital", qtd: 2, unidade: "UN" }
-    ];
-
-    let estoque = JSON.parse(localStorage.getItem("arpol_estoque_v2") || "null");
-    if (!estoque || estoque.length === 0) {
-      estoque = itensIniciais;
-      localStorage.setItem("arpol_estoque_v2", JSON.stringify(estoque));
+    // Configuração Supabase com credenciais do projeto ARPOL
+    const SUPABASE_URL = "https://hkxgqsxrpgznlnhvmvaj.supabase.co";
+    // Usar a chave anon que já estava no projeto
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzE1NTIsImV4cCI6MjA1NjgwNzU1Mn0.S_1JpQ-X9H0b1M0VwGvYV5B8L9rK2P4jN1wF7aY3c8Q";
+    
+    // Fallback ou inicialização
+    let clientSupabase = null;
+    try {
+      if (window.supabase) {
+        clientSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      }
+    } catch(e) {
+      console.warn("Supabase init local fallback:", e);
     }
 
-    let relatorios = JSON.parse(localStorage.getItem("arpol_relatorios_v2") || "[]");
+    const syncStatus = document.getElementById("sync-status");
+    let estoque = [];
+    let relatorios = [];
 
     // Alternar abas
     const tabEstoque = document.getElementById("tab-btn-estoque");
@@ -466,10 +476,46 @@
       formRel.style.display = "none";
     });
 
+    // Carregar estoque
+    async function carregarEstoque() {
+      if (clientSupabase) {
+        try {
+          const { data, error } = await clientSupabase.from("estoque").select("*").order("id", { ascending: true });
+          if (!error && data && data.length > 0) {
+            estoque = data;
+            syncStatus.textContent = "🟢 Sincronizado com Supabase (Nuvem)";
+            renderEstoque();
+            return;
+          }
+        } catch(err) {
+          console.warn("Erro ao buscar Supabase:", err);
+        }
+      }
+      
+      // Fallback local
+      estoque = JSON.parse(localStorage.getItem("arpol_estoque_v2") || "[]");
+      if (estoque.length === 0) {
+        estoque = [
+          { id: 1, codigo: "GAS-R410A", descricao: "Gás Refrigerante R410A - Botija 11,3kg", qtd: 9, unidade: "UN" },
+          { id: 2, codigo: "CAP-45UF", descricao: "Capacitor 45uF 440VAC Duplo", qtd: 15, unidade: "PC" },
+          { id: 3, codigo: "TUB-12", descricao: "Tubo de Cobre 1/2 flexível", qtd: 30, unidade: "MT" },
+          { id: 4, codigo: "VALV-01", descricao: "Válvula de Expansão Termostática", qtd: 3, unidade: "PC" },
+          { id: 5, codigo: "TERM-DIG", descricao: "Termômetro Penta Digital", qtd: 2, unidade: "UN" }
+        ];
+      }
+      syncStatus.textContent = "🟡 Modo Local Ativo";
+      renderEstoque();
+    }
+
     // Renderizar tabela de estoque
     function renderEstoque() {
       const tbody = document.getElementById("tabela-estoque-body");
       tbody.innerHTML = "";
+
+      if (estoque.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="loading-notice">Nenhum item cadastrado. Clique em "+ Novo Item".</td></tr>`;
+        return;
+      }
 
       estoque.forEach(item => {
         let badge = item.qtd > 5 
@@ -496,17 +542,28 @@
       });
     }
 
-    window.alterarQtd = function(id, delta) {
+    // Alterar quantidade no Supabase e na tela
+    window.alterarQtd = async function(id, delta) {
       const item = estoque.find(i => i.id === id);
-      if (item) {
-        item.qtd = Math.max(0, item.qtd + delta);
-        localStorage.setItem("arpol_estoque_v2", JSON.stringify(estoque));
-        renderEstoque();
+      if (!item) return;
+
+      const novaQtd = Math.max(0, item.qtd + delta);
+      item.qtd = novaQtd;
+      renderEstoque();
+
+      if (clientSupabase) {
+        try {
+          await clientSupabase.from("estoque").update({ qtd: novaQtd }).eq("id", id);
+          syncStatus.textContent = "🟢 Sincronizado com Supabase (Nuvem)";
+        } catch(err) {
+          console.error("Erro ao atualizar no Supabase:", err);
+        }
       }
+      localStorage.setItem("arpol_estoque_v2", JSON.stringify(estoque));
     };
 
     // Salvar novo item
-    document.getElementById("btn-salvar-item").addEventListener("click", () => {
+    document.getElementById("btn-salvar-item").addEventListener("click", async () => {
       const codigo = document.getElementById("novo-codigo").value.trim();
       const descricao = document.getElementById("nova-descricao").value.trim();
       const qtd = parseInt(document.getElementById("novo-qtd").value) || 0;
@@ -517,24 +574,47 @@
         return;
       }
 
-      estoque.push({
-        id: Date.now(),
-        codigo,
-        descricao,
-        qtd,
-        unidade
-      });
+      const novo = { codigo, descricao, qtd, unidade };
+
+      if (clientSupabase) {
+        try {
+          const { data, error } = await clientSupabase.from("estoque").insert([novo]).select();
+          if (!error && data && data.length > 0) {
+            estoque.push(data[0]);
+          } else {
+            estoque.push({ id: Date.now(), ...novo });
+          }
+        } catch(e) {
+          estoque.push({ id: Date.now(), ...novo });
+        }
+      } else {
+        estoque.push({ id: Date.now(), ...novo });
+      }
 
       localStorage.setItem("arpol_estoque_v2", JSON.stringify(estoque));
       renderEstoque();
 
-      // Limpar campos e fechar
       document.getElementById("novo-codigo").value = "";
       document.getElementById("nova-descricao").value = "";
       formItem.style.display = "none";
     });
 
-    // Renderizar relatórios
+    // Carregar relatórios
+    async function carregarRelatorios() {
+      if (clientSupabase) {
+        try {
+          const { data, error } = await clientSupabase.from("relatorios").select("*").order("id", { ascending: false });
+          if (!error && data) {
+            relatorios = data;
+            renderRelatorios();
+            return;
+          }
+        } catch(err) {}
+      }
+      relatorios = JSON.parse(localStorage.getItem("arpol_relatorios_v2") || "[]");
+      renderRelatorios();
+    }
+
     function renderRelatorios() {
       const tbody = document.getElementById("tabela-relatorios-body");
       tbody.innerHTML = "";
@@ -559,23 +639,37 @@
       });
     }
 
-    document.getElementById("btn-salvar-relatorio").addEventListener("click", () => {
+    document.getElementById("btn-salvar-relatorio").addEventListener("click", async () => {
       const cliente = document.getElementById("rel-cliente").value.trim();
       const tecnico = document.getElementById("rel-tecnico").value.trim();
       const detalhes = document.getElementById("rel-detalhes").value.trim();
 
       if (!cliente || !detalhes) {
-        alert("Por favor, informe o cliente e os detalhes do serviço.");
+        alert("Por favor, preencha o cliente e os detalhes.");
         return;
       }
 
-      relatorios.unshift({
-        id: Date.now(),
+      const novoRel = {
         data: new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR", {hour: '2-digit', minute:'2-digit'}),
         cliente,
         tecnico: tecnico || "Sandro Ricardo",
         detalhes
-      });
+      };
+
+      if (clientSupabase) {
+        try {
+          const { data } = await clientSupabase.from("relatorios").insert([novoRel]).select();
+          if (data && data.length > 0) {
+            relatorios.unshift(data[0]);
+          } else {
+            relatorios.unshift({ id: Date.now(), ...novoRel });
+          }
+        } catch(e) {
+          relatorios.unshift({ id: Date.now(), ...novoRel });
+        }
+      } else {
+        relatorios.unshift({ id: Date.now(), ...novoRel });
+      }
 
       localStorage.setItem("arpol_relatorios_v2", JSON.stringify(relatorios));
       renderRelatorios();
@@ -588,13 +682,18 @@
     window.visualizarRelatorio = function(id) {
       const r = relatorios.find(item => item.id === id);
       if (r) {
-        alert("RELATÓRIO DE ASSISTÊNCIA TÉCNICA - ARPOL\n------------------------------------------------\nCliente: " + r.cliente + "\nData: " + r.data + "\nTécnico: " + r.tecnico + "\n\nProcedimentos Realizados:\n" + r.detalhes);
+        alert("RELATÓRIO TÉCNICO - ARPOL\n--------------------------------\nCliente: " + r.cliente + "\nData: " + r.data + "\nTécnico: " + r.tecnico + "\n\nServiço Realizado:\n" + r.detalhes);
       }
     };
 
-    // Inicialização direta
-    renderEstoque();
-    renderRelatorios();
+    // Inicialização
+    carregarEstoque();
+    carregarRelatorios();
+    
+    // Atualização automática em tempo real a cada 10 segundos
+    setInterval(() => {
+      carregarEstoque();
+    }, 10000);
   </script>
 </body>
 </html>
