@@ -21,7 +21,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background-color: var(--bg); color: var(--text); padding-bottom: 40px; }
 
-    /* Barra Superior */
     .top-bar {
       background: var(--primary);
       color: var(--white);
@@ -48,14 +47,12 @@
       cursor: pointer;
     }
 
-    /* Container Principal */
     .container {
       max-width: 800px;
       margin: 16px auto;
       padding: 0 16px;
     }
 
-    /* Card de Login */
     .auth-card {
       background: var(--white);
       border-radius: 12px;
@@ -66,10 +63,10 @@
       margin: 40px auto;
       text-align: center;
     }
-    .auth-logo {
-      max-width: 200px;
-      height: auto;
-      margin-bottom: 20px;
+    .auth-logo-svg {
+      max-width: 220px;
+      margin: 0 auto 16px auto;
+      display: block;
     }
     .auth-title {
       font-size: 18px;
@@ -117,7 +114,6 @@
       text-transform: uppercase;
     }
 
-    /* Painel do Formulário */
     .card {
       background: var(--white);
       border-radius: 10px;
@@ -135,7 +131,6 @@
       .grid-2 { grid-template-columns: 1fr; }
     }
 
-    /* Ações de navegação */
     .action-bar {
       display: flex;
       gap: 10px;
@@ -160,7 +155,6 @@
     .btn-blue { background: var(--primary); color: #fff; }
     .btn-green { background: #16a34a; color: #fff; }
 
-    /* Bloco de Fotos (Modo Edição) */
     .photo-upload-zone {
       border: 2px dashed #94a3b8;
       border-radius: 8px;
@@ -198,7 +192,6 @@
       margin-top: 6px;
     }
 
-    /* FOLHA DE RELATÓRIO A4 (Visualização e Impressão) */
     .a4-page {
       background: #fff;
       width: 100%;
@@ -216,10 +209,6 @@
       border-bottom: 2px solid #e2e8f0;
       padding-bottom: 12px;
       margin-bottom: 14px;
-    }
-    .report-header img {
-      max-height: 60px;
-      width: auto;
     }
     .report-header-title {
       font-size: 20px;
@@ -247,7 +236,6 @@
       width: 25%;
     }
 
-    /* Grade 2x2 ou 2x3 para 4 a 6 fotos por folha A4 */
     .report-photos-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -275,7 +263,6 @@
       text-align: center;
     }
 
-    /* Configuração de Impressão (PDF Direto) */
     @media print {
       body { background: #fff; padding: 0; }
       .top-bar, .action-bar, #form-section, .btn-remove-photo, .photo-upload-zone { display: none !important; }
@@ -295,12 +282,12 @@
   <!-- Tela de Login -->
   <div id="auth-section" class="container">
     <div class="auth-card">
-      <img id="logo-preview-login" class="auth-logo" alt="ARPOL">
+      <div id="login-logo-container" class="auth-logo-svg"></div>
       <div class="auth-title">Acesso do Técnico</div>
       <form id="login-form">
         <div class="form-group">
           <label>E-mail de Login</label>
-          <input type="email" id="login-email" class="form-control" placeholder="ex: einstein@arpolar.com.br" required>
+          <input type="email" id="login-email" class="form-control" placeholder="einstein@arpolar.com.br" required>
         </div>
         <div class="form-group">
           <label>Palavra-passe</label>
@@ -312,7 +299,7 @@
     </div>
   </div>
 
-  <!-- Aplicação Principal (Oculta até autenticar) -->
+  <!-- Aplicação Principal -->
   <div id="app-section" style="display: none;">
     <div class="top-bar">
       <div class="top-bar-title">Relatório Fotográfico</div>
@@ -326,7 +313,6 @@
         <button class="btn-action btn-green" onclick="window.print()">🖨️ Baixar PDF</button>
       </div>
 
-      <!-- Seção do Formulário -->
       <div id="form-section">
         <div class="card">
           <div class="grid-2">
@@ -369,7 +355,7 @@
           <div class="photo-upload-zone" onclick="document.getElementById('file-input').click()">
             <div style="font-size: 24px; margin-bottom: 6px;">📷</div>
             <div style="font-weight: 700; color: var(--primary);">Toque para anexar fotos</div>
-            <div style="font-size: 12px; color: #64748b;">Suporta imagens da galeria ou câmera direta</div>
+            <div style="font-size: 12px; color: #64748b;">Suporta imagens da galeria ou câmara direta</div>
             <input type="file" id="file-input" accept="image/*" multiple style="display: none;" onchange="handleFiles(this.files)">
           </div>
 
@@ -377,11 +363,10 @@
         </div>
       </div>
 
-      <!-- Seção do Relatório A4 Formatado -->
       <div id="preview-section" style="display: none;">
         <div class="a4-page">
           <div class="report-header">
-            <img id="logo-preview-report" alt="ARPOL">
+            <div id="report-logo-container" style="max-width: 180px;"></div>
             <div class="report-header-title">Relatório Fotográfico</div>
           </div>
 
@@ -417,28 +402,38 @@
   </div>
 
   <script>
-    // Logótipo oficial da ARPOL em Base64
-    const LOGO_ARPOL_SRC = "https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png";
+    const LOGO_SVG = `
+      <svg viewBox="0 0 400 240" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto;">
+        <defs>
+          <linearGradient id="arpolGold" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#FACC15"/>
+            <stop offset="50%" stop-color="#F59E0B"/>
+            <stop offset="100%" stop-color="#D97706"/>
+          </linearGradient>
+        </defs>
+        <polygon points="200,20 265,130 230,130 200,75 155,150 250,150 265,175 125,175 200,20" fill="url(#arpolGold)"/>
+        <text x="200" y="210" text-anchor="middle" fill="#1e3a8a" font-size="38" font-weight="900" font-family="Arial, sans-serif" letter-spacing="4">ARPOL</text>
+        <text x="200" y="232" text-anchor="middle" fill="#1e3a8a" font-size="12" font-weight="700" font-family="Arial, sans-serif" letter-spacing="5">CONFORTO TÉRMICO</text>
+      </svg>
+    `;
 
-    // Configuração Supabase
-    const SUPABASE_URL = "https://ydmvhvhayveypfjmjetgg.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkbXZodmhheXZleXBmam1qZXRnZyIsInJvbGUiOiJhbW9uIiwiaWF0IjoxNzMwMzg5NzU1LCJleHAiOjIwNDU5NjU3NTV9.g1RkG4a9M16QzWd7t2y7B1Z8eR1Vq_0P9_vVz7jN_Lw";
+    // Conexão oficial ao Supabase
+    const SUPABASE_URL = "https://hkxgqsxrpgznlnhvmvaj.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzOTIyNTUsImV4cCI6MjEwODk2ODI1NX0.hHYuiCxqU4KTKoHNlzYD3i1qGt2hPZCJMt2MQvIOHNw";
     
     let supabaseClient = null;
     try {
       supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     } catch (e) {
-      console.warn("Supabase local fallback ativado.");
+      console.warn("Falha de inicialização do Supabase");
     }
 
     let reportPhotos = [];
 
-    // Inicialização da página
     window.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('logo-preview-login').src = LOGO_ARPOL_SRC;
-      document.getElementById('logo-preview-report').src = LOGO_ARPOL_SRC;
+      document.getElementById('login-logo-container').innerHTML = LOGO_SVG;
+      document.getElementById('report-logo-container').innerHTML = LOGO_SVG;
 
-      // Gera ID automático e data do dia
       const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
       const today = new Date().toISOString().split('T')[0];
       document.getElementById('inp-id').value = `ATD-${today.replace(/-/g, '')}-${randomCode}`;
@@ -447,7 +442,6 @@
       checkSession();
     });
 
-    // Verificação de Sessão do Usuário
     async function checkSession() {
       if (!supabaseClient) return;
       const { data: { session } } = await supabaseClient.auth.getSession();
@@ -468,7 +462,6 @@
       document.getElementById('app-section').style.display = 'none';
     }
 
-    // Formulário de Login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('login-email').value.trim();
@@ -477,14 +470,14 @@
       const btn = document.getElementById('btn-login-submit');
 
       errBox.style.display = 'none';
-      btn.innerText = "Verificando...";
+      btn.innerText = "A autenticar...";
 
       try {
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
         showApp();
       } catch (err) {
-        errBox.innerText = "Acesso negado ou usuário desativado no painel.";
+        errBox.innerText = `Erro: ${err.message || "Credenciais inválidas"}`;
         errBox.style.display = 'block';
       } finally {
         btn.innerText = "Entrar no Sistema";
@@ -496,7 +489,6 @@
       showLogin();
     }
 
-    // Alternar Visualização (Edição vs Relatório A4)
     function switchView(view) {
       if (view === 'form') {
         document.getElementById('form-section').style.display = 'block';
@@ -508,7 +500,6 @@
       }
     }
 
-    // Sincronizar dados para visualização/PDF
     function syncReportPreview() {
       document.getElementById('rpt-id').innerText = document.getElementById('inp-id').value || '-';
       document.getElementById('rpt-data').innerText = document.getElementById('inp-data').value || '-';
@@ -531,7 +522,6 @@
       });
     }
 
-    // Manipulação de Fotos
     function handleFiles(files) {
       Array.from(files).forEach((file) => {
         const reader = new FileReader();
