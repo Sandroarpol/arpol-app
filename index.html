@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ARPOL - Sistema de Gestão e Almoxarifado</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #0F5132;
@@ -204,4 +204,96 @@
     <header>
         <div class="logo-container">
             <img src="logo-oficial.jpg" alt="ARPOL Conforto Térmico" class="logo-img">
-            <span class="logo-text">Alm
+            <span class="logo-text">Almoxarifado & Relatórios</span>
+        </div>
+        <div class="user-badge">
+            sandro.ricardo@arpolar.com.br
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active">📦 Estoque & Almoxarifado</button>
+            <button class="tab-btn" onclick="window.location.href='relatorio.html'">📋 Relatórios Operacionais</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Movimentação de Peças & Materiais</h2>
+                <button class="btn-add">+ Novo Item</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descrição do Material</th>
+                        <th>Quantidade</th>
+                        <th>Unidade</th>
+                        <th>Estado</th>
+                        <th>Ações de Entrada / Saída</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>GAS-R410A</strong></td>
+                        <td>Gás Refrigerante R410A - Botija 11,3kg</td>
+                        <td><strong>11</strong></td>
+                        <td>UN</td>
+                        <td><span class="badge-status badge-estoque">Em Estoque</span></td>
+                        <td>
+                            <button class="btn-action">+1 Entrada</button>
+                            <button class="btn-action out">-1 Saída</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>CAP-45UF</strong></td>
+                        <td>Capacitor 45uF 440VAC Duplo</td>
+                        <td><strong>16</strong></td>
+                        <td>PC</td>
+                        <td><span class="badge-status badge-estoque">Em Estoque</span></td>
+                        <td>
+                            <button class="btn-action">+1 Entrada</button>
+                            <button class="btn-action out">-1 Saída</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>TUB-12</strong></td>
+                        <td>Tubo de Cobre 1/2 flexível</td>
+                        <td><strong>30</strong></td>
+                        <td>MT</td>
+                        <td><span class="badge-status badge-estoque">Em Estoque</span></td>
+                        <td>
+                            <button class="btn-action">+1 Entrada</button>
+                            <button class="btn-action out">-1 Saída</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>VALV-01</strong></td>
+                        <td>Válvula de Expansão Termostática</td>
+                        <td><strong>0</strong></td>
+                        <td>PC</td>
+                        <td><span class="badge-status badge-esgotado">Esgotado</span></td>
+                        <td>
+                            <button class="btn-action">+1 Entrada</button>
+                            <button class="btn-action out">-1 Saída</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>TERM-DIG</strong></td>
+                        <td>Termômetro Penta Digital</td>
+                        <td><strong>2</strong></td>
+                        <td>UN</td>
+                        <td><span class="badge-status badge-baixo">Baixo Estoque</span></td>
+                        <td>
+                            <button class="btn-action">+1 Entrada</button>
+                            <button class="btn-action out">-1 Saída</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>
