@@ -20,14 +20,12 @@
       --warning: #ffc107;
       --radius: 8px;
     }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
-
     body {
       background-color: var(--bg);
       color: var(--text);
@@ -35,7 +33,6 @@
       display: flex;
       flex-direction: column;
     }
-
     .status-bar {
       background: #e8f5e9;
       border-bottom: 1px solid #c8e6c9;
@@ -45,8 +42,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-
     header {
       background: white;
       border-bottom: 1px solid var(--border);
@@ -58,13 +56,11 @@
       top: 0;
       z-index: 10;
     }
-
     .logo-container {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-
     .logo-badge {
       background: var(--primary);
       color: white;
@@ -74,13 +70,11 @@
       border-radius: var(--radius);
       letter-spacing: 1px;
     }
-
     .logo-text {
       font-size: 18px;
       font-weight: 700;
       color: var(--text);
     }
-
     .user-badge {
       background: var(--primary-light);
       color: var(--primary);
@@ -89,7 +83,6 @@
       font-weight: 600;
       font-size: 13px;
     }
-
     .main-nav {
       background: white;
       border-bottom: 1px solid var(--border);
@@ -97,7 +90,6 @@
       display: flex;
       gap: 24px;
     }
-
     .nav-tab {
       padding: 14px 6px;
       cursor: pointer;
@@ -108,12 +100,10 @@
       user-select: none;
       transition: all 0.2s;
     }
-
     .nav-tab.active {
       color: var(--primary);
       border-bottom-color: var(--primary);
     }
-
     .content-container {
       max-width: 1200px;
       width: 100%;
@@ -121,7 +111,6 @@
       padding: 0 20px;
       flex: 1;
     }
-
     .section-card {
       background: white;
       border: 1px solid var(--border);
@@ -130,7 +119,6 @@
       margin-bottom: 24px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
-
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -139,13 +127,11 @@
       flex-wrap: wrap;
       gap: 12px;
     }
-
     .section-title {
       font-size: 18px;
       font-weight: 700;
       color: var(--text);
     }
-
     .form-panel {
       background: #f8fafc;
       border: 1px solid #cbd5e1;
@@ -154,18 +140,15 @@
       margin-bottom: 20px;
       display: none;
     }
-
     .form-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
       margin-bottom: 16px;
     }
-
     .form-group {
       text-align: left;
     }
-
     .form-group label {
       display: block;
       font-size: 13px;
@@ -173,7 +156,6 @@
       margin-bottom: 6px;
       color: var(--text);
     }
-
     .form-group input, .form-group select, .form-group textarea {
       width: 100%;
       padding: 10px 12px;
@@ -183,11 +165,9 @@
       outline: none;
       background: white;
     }
-
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--primary);
     }
-
     .btn {
       display: inline-flex;
       align-items: center;
@@ -203,56 +183,46 @@
       cursor: pointer;
       transition: background 0.2s;
     }
-
     .btn:hover {
       background: var(--primary-hover);
     }
-
     .btn-secondary {
       background: #6c757d;
     }
     .btn-secondary:hover {
       background: #5a6268;
     }
-
     .btn-sm {
       padding: 6px 12px;
       font-size: 13px;
     }
-
     .table-responsive {
       overflow-x: auto;
       margin-top: 16px;
       border: 1px solid var(--border);
       border-radius: var(--radius);
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 14px;
       text-align: left;
     }
-
     th, td {
       padding: 12px 16px;
       border-bottom: 1px solid var(--border);
     }
-
     th {
       background-color: #f8f9fa;
       font-weight: 600;
       color: var(--text-muted);
     }
-
     tr:last-child td {
       border-bottom: none;
     }
-
     tr:hover {
       background-color: #fafafa;
     }
-
     .stock-badge {
       display: inline-block;
       padding: 4px 10px;
@@ -260,16 +230,13 @@
       font-weight: 600;
       font-size: 12px;
     }
-
     .stock-ok { background: #d1e7dd; color: #0f5132; }
     .stock-low { background: #fff3cd; color: #664d03; }
     .stock-empty { background: #f8d7da; color: #842029; }
-
     .action-btns {
       display: flex;
       gap: 6px;
     }
-    
     .loading-notice {
       padding: 20px;
       text-align: center;
@@ -280,8 +247,8 @@
 <body>
 
   <div class="status-bar">
-    <span>✅ <strong>Acesso Direto ARPOL:</strong> Ligado como Sandro Ricardo (Administrador)</span>
-    <span id="sync-status">🔄 Sincronizando com Supabase...</span>
+    <span>✅ <strong>Acesso Direto ARPOL:</strong> Sandro Ricardo (Administrador)</span>
+    <span id="sync-status">🔄 Conectando à nuvem...</span>
   </div>
 
   <header>
@@ -300,8 +267,6 @@
   </nav>
 
   <div class="content-container">
-    
-    <!-- ABA 1: ESTOQUE / ALMOXARIFADO -->
     <div id="pane-estoque" class="tab-pane">
       <div class="section-card">
         <div class="section-header">
@@ -309,7 +274,6 @@
           <button class="btn" id="btn-toggle-novo-item">+ Novo Item</button>
         </div>
 
-        <!-- FORMULÁRIO DE NOVO ITEM -->
         <div class="form-panel" id="form-novo-item">
           <h4 style="margin-bottom: 14px; font-size: 15px; color: var(--primary);">Cadastrar Peça / Material no Almoxarifado</h4>
           <div class="form-grid">
@@ -354,14 +318,13 @@
               </tr>
             </thead>
             <tbody id="tabela-estoque-body">
-              <tr><td colspan="6" class="loading-notice">Carregando itens do banco de dados...</td></tr>
+              <tr><td colspan="6" class="loading-notice">Carregando estoque da nuvem...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- ABA 2: RELATÓRIOS -->
     <div id="pane-relatorios" class="tab-pane" style="display: none;">
       <div class="section-card">
         <div class="section-header">
@@ -369,7 +332,6 @@
           <button class="btn" id="btn-toggle-novo-relatorio">+ Novo Relatório</button>
         </div>
 
-        <!-- FORMULÁRIO DE RELATÓRIO -->
         <div class="form-panel" id="form-novo-relatorio">
           <h4 style="margin-bottom: 14px; font-size: 15px; color: var(--primary);">Registrar Relatório de Serviço</h4>
           <div class="form-grid">
@@ -410,30 +372,25 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <script>
-    // Configuração Supabase com credenciais do projeto ARPOL
     const SUPABASE_URL = "https://hkxgqsxrpgznlnhvmvaj.supabase.co";
-    // Usar a chave anon que já estava no projeto
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEyMzE1NTIsImV4cCI6MjA1NjgwNzU1Mn0.S_1JpQ-X9H0b1M0VwGvYV5B8L9rK2P4jN1wF7aY3c8Q";
+    const SUPABASE_KEY = "sb_publishable_22jln0uoQcNffnSv0DPsqQ_898yO0x_";
     
-    // Fallback ou inicialização
     let clientSupabase = null;
     try {
       if (window.supabase) {
         clientSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
       }
     } catch(e) {
-      console.warn("Supabase init local fallback:", e);
+      console.error("Falha ao inicializar Supabase:", e);
     }
 
     const syncStatus = document.getElementById("sync-status");
     let estoque = [];
     let relatorios = [];
 
-    // Alternar abas
     const tabEstoque = document.getElementById("tab-btn-estoque");
     const tabRelatorios = document.getElementById("tab-btn-relatorios");
     const paneEstoque = document.getElementById("pane-estoque");
@@ -453,7 +410,6 @@
       paneEstoque.style.display = "none";
     });
 
-    // Controlar visibilidade dos formulários
     const btnToggleItem = document.getElementById("btn-toggle-novo-item");
     const formItem = document.getElementById("form-novo-item");
     const btnCancelarItem = document.getElementById("btn-cancelar-item");
@@ -476,38 +432,24 @@
       formRel.style.display = "none";
     });
 
-    // Carregar estoque
     async function carregarEstoque() {
       if (clientSupabase) {
         try {
           const { data, error } = await clientSupabase.from("estoque").select("*").order("id", { ascending: true });
-          if (!error && data && data.length > 0) {
+          if (!error && data) {
             estoque = data;
             syncStatus.textContent = "🟢 Sincronizado com Supabase (Nuvem)";
             renderEstoque();
             return;
           }
         } catch(err) {
-          console.warn("Erro ao buscar Supabase:", err);
+          console.error("Erro Supabase:", err);
         }
       }
-      
-      // Fallback local
-      estoque = JSON.parse(localStorage.getItem("arpol_estoque_v2") || "[]");
-      if (estoque.length === 0) {
-        estoque = [
-          { id: 1, codigo: "GAS-R410A", descricao: "Gás Refrigerante R410A - Botija 11,3kg", qtd: 9, unidade: "UN" },
-          { id: 2, codigo: "CAP-45UF", descricao: "Capacitor 45uF 440VAC Duplo", qtd: 15, unidade: "PC" },
-          { id: 3, codigo: "TUB-12", descricao: "Tubo de Cobre 1/2 flexível", qtd: 30, unidade: "MT" },
-          { id: 4, codigo: "VALV-01", descricao: "Válvula de Expansão Termostática", qtd: 3, unidade: "PC" },
-          { id: 5, codigo: "TERM-DIG", descricao: "Termômetro Penta Digital", qtd: 2, unidade: "UN" }
-        ];
-      }
-      syncStatus.textContent = "🟡 Modo Local Ativo";
+      syncStatus.textContent = "🟡 Modo Local Ativo (Sem conexão)";
       renderEstoque();
     }
 
-    // Renderizar tabela de estoque
     function renderEstoque() {
       const tbody = document.getElementById("tabela-estoque-body");
       tbody.innerHTML = "";
@@ -528,7 +470,7 @@
         tr.innerHTML = `
           <td><strong>${item.codigo}</strong></td>
           <td>${item.descricao}</td>
-          <td><strong style="font-size: 15px;">${item.qtd}</strong></td>
+          <td><strong style="font-size: 16px;">${item.qtd}</strong></td>
           <td>${item.unidade}</td>
           <td>${badge}</td>
           <td>
@@ -542,7 +484,6 @@
       });
     }
 
-    // Alterar quantidade no Supabase e na tela
     window.alterarQtd = async function(id, delta) {
       const item = estoque.find(i => i.id === id);
       if (!item) return;
@@ -553,16 +494,16 @@
 
       if (clientSupabase) {
         try {
-          await clientSupabase.from("estoque").update({ qtd: novaQtd }).eq("id", id);
-          syncStatus.textContent = "🟢 Sincronizado com Supabase (Nuvem)";
+          const { error } = await clientSupabase.from("estoque").update({ qtd: novaQtd }).eq("id", id);
+          if (!error) {
+            syncStatus.textContent = "🟢 Sincronizado com Supabase (Nuvem)";
+          }
         } catch(err) {
-          console.error("Erro ao atualizar no Supabase:", err);
+          console.error("Exceção:", err);
         }
       }
-      localStorage.setItem("arpol_estoque_v2", JSON.stringify(estoque));
     };
 
-    // Salvar novo item
     document.getElementById("btn-salvar-item").addEventListener("click", async () => {
       const codigo = document.getElementById("novo-codigo").value.trim();
       const descricao = document.getElementById("nova-descricao").value.trim();
@@ -570,7 +511,7 @@
       const unidade = document.getElementById("nova-unidade").value;
 
       if (!codigo || !descricao) {
-        alert("Por favor, preencha o código e a descrição da peça.");
+        alert("Preencha o código e a descrição da peça.");
         return;
       }
 
@@ -581,25 +522,18 @@
           const { data, error } = await clientSupabase.from("estoque").insert([novo]).select();
           if (!error && data && data.length > 0) {
             estoque.push(data[0]);
-          } else {
-            estoque.push({ id: Date.now(), ...novo });
+            renderEstoque();
           }
         } catch(e) {
-          estoque.push({ id: Date.now(), ...novo });
+          console.error(e);
         }
-      } else {
-        estoque.push({ id: Date.now(), ...novo });
       }
-
-      localStorage.setItem("arpol_estoque_v2", JSON.stringify(estoque));
-      renderEstoque();
 
       document.getElementById("novo-codigo").value = "";
       document.getElementById("nova-descricao").value = "";
       formItem.style.display = "none";
     });
 
-    // Carregar relatórios
     async function carregarRelatorios() {
       if (clientSupabase) {
         try {
@@ -609,10 +543,10 @@
             renderRelatorios();
             return;
           }
-        } catch(err) {}
+        } catch(err) {
+          console.error(err);
+        }
       }
-      relatorios = JSON.parse(localStorage.getItem("arpol_relatorios_v2") || "[]");
-      renderRelatorios();
     }
 
     function renderRelatorios() {
@@ -620,16 +554,16 @@
       tbody.innerHTML = "";
 
       if (relatorios.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 24px;">Nenhum relatório emitido ainda. Clique em "+ Novo Relatório" acima.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--text-muted); padding: 24px;">Nenhum relatório emitido ainda. Clique em "+ Novo Relatório".</td></tr>`;
         return;
       }
 
       relatorios.forEach(rel => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${rel.data}</td>
+          <td>${rel.data || ''}</td>
           <td><strong>${rel.cliente}</strong></td>
-          <td>${rel.tecnico}</td>
+          <td>${rel.tecnico || ''}</td>
           <td>${rel.detalhes}</td>
           <td>
             <button class="btn btn-secondary btn-sm" onclick="visualizarRelatorio(${rel.id})">Visualizar</button>
@@ -645,7 +579,7 @@
       const detalhes = document.getElementById("rel-detalhes").value.trim();
 
       if (!cliente || !detalhes) {
-        alert("Por favor, preencha o cliente e os detalhes.");
+        alert("Preencha o cliente e os detalhes.");
         return;
       }
 
@@ -658,21 +592,15 @@
 
       if (clientSupabase) {
         try {
-          const { data } = await clientSupabase.from("relatorios").insert([novoRel]).select();
-          if (data && data.length > 0) {
+          const { data, error } = await clientSupabase.from("relatorios").insert([novoRel]).select();
+          if (!error && data && data.length > 0) {
             relatorios.unshift(data[0]);
-          } else {
-            relatorios.unshift({ id: Date.now(), ...novoRel });
+            renderRelatorios();
           }
         } catch(e) {
-          relatorios.unshift({ id: Date.now(), ...novoRel });
+          console.error(e);
         }
-      } else {
-        relatorios.unshift({ id: Date.now(), ...novoRel });
       }
-
-      localStorage.setItem("arpol_relatorios_v2", JSON.stringify(relatorios));
-      renderRelatorios();
 
       document.getElementById("rel-cliente").value = "";
       document.getElementById("rel-detalhes").value = "";
@@ -686,14 +614,13 @@
       }
     };
 
-    // Inicialização
     carregarEstoque();
     carregarRelatorios();
-    
-    // Atualização automática em tempo real a cada 10 segundos
+
     setInterval(() => {
       carregarEstoque();
-    }, 10000);
+      carregarRelatorios();
+    }, 5000);
   </script>
 </body>
 </html>
