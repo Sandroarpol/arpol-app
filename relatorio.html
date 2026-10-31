@@ -111,8 +111,8 @@
     <!-- Login -->
     <div id="auth-gate" class="auth-overlay">
         <div class="auth-box">
-            <img src="logo-oficial.jpg" alt="ARPOL" style="max-height: 50px; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;" onerror="this.src='https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png'">
-            <div style="font-size: 12px; font-weight: 800; color: #1e3a8a; margin-bottom: 16px; text-transform: uppercase;">Acesso do Técnico</div>
+            <div style="font-weight: 900; font-size: 22px; color: #1e3a8a; letter-spacing: 1px;">ARPOL</div>
+            <div style="font-size: 11px; font-weight: 700; color: #d97706; margin-bottom: 16px; text-transform: uppercase;">Acesso do Técnico</div>
             <form id="form-auth">
                 <div class="form-group" style="text-align: left;">
                     <label>E-mail</label>
@@ -128,11 +128,11 @@
         </div>
     </div>
 
-    <!-- Barra Azul Superior com Logo Oficial Embutida -->
+    <!-- Barra Azul Superior -->
     <header>
         <div class="header-content">
             <div class="brand">
-                <img src="logo-oficial.jpg" class="brand-logo-img" alt="ARPOL" onerror="this.src='https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png'">
+                <div style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.35); padding: 4px 8px; border-radius: 4px; font-weight: 900; font-size: 14px; letter-spacing: 1px;">ARPOL</div>
                 <div>
                     <div class="brand-title">CONFORTO TÉRMICO</div>
                     <div class="brand-sub">Sistema Online / Cloud</div>
@@ -203,7 +203,7 @@
                 </div>
             </div>
 
-            <!-- Registro Fotográfico com os Botões Originais -->
+            <!-- Registro Fotográfico -->
             <div class="card">
                 <div class="card-title">
                     <span>Registro Fotográfico</span>
@@ -234,8 +234,8 @@
 
             <div class="a4-page" id="relatorio-imprimir">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d97706; padding-bottom: 10px; margin-bottom: 14px;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <img src="logo-oficial.jpg" alt="ARPOL" style="height: 50px; max-width: 140px; object-fit: contain; display: block;" onerror="this.src='https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png'">
+                    <div style="font-weight: 900; font-size: 24px; color: #1e3a8a; letter-spacing: 1px;">
+                        ARPOL
                     </div>
                     <div style="text-align: right;">
                         <div style="font-weight: 800; font-size: 15px; color: #d97706; text-transform: uppercase;">RELATÓRIO FOTOGRÁFICO</div>
@@ -368,9 +368,9 @@
         }
 
         function adicionarParForm() {
-    adicionarFotoForm('ANTES');
-    adicionarFotoForm('DEPOIS');
-}
+            adicionarFotoForm('ANTES');
+            adicionarFotoForm('DEPOIS');
+        }
 
         function renderizarFotosForm() {
             const c = document.getElementById('container-fotos-form');
