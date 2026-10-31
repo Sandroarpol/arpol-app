@@ -1,702 +1,555 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ARPOL - Relatório Fotográfico</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --primary: #103b7b;
-      --primary-dark: #0a2652;
-      --orange: #e65c00;
-      --green: #008744;
-      --bg: #eef2f7;
-      --card-bg: #ffffff;
-      --border: #d0d7de;
-      --text: #222222;
-      --subtext: #555555;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 40px; }
-
-    /* Topo Azul Clássico */
-    .top-header {
-      background: var(--primary);
-      color: #fff;
-      padding: 10px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-    .brand-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .brand-box {
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-weight: 900;
-      font-size: 14px;
-      letter-spacing: 1px;
-    }
-    .brand-text h1 {
-      font-size: 15px;
-      font-weight: 800;
-      line-height: 1.1;
-      text-transform: uppercase;
-    }
-    .brand-text span {
-      font-size: 10px;
-      color: #cbd5e1;
-      display: block;
-    }
-    .btn-top-action {
-      background: var(--orange);
-      color: #fff;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 6px;
-      font-weight: 800;
-      font-size: 11px;
-      text-transform: uppercase;
-      cursor: pointer;
-      line-height: 1.2;
-      text-align: center;
-    }
-
-    /* Container Principal */
-    .app-wrap {
-      max-width: 600px;
-      margin: 12px auto;
-      padding: 0 12px;
-    }
-
-    /* Abas de Navegação Superiores */
-    .nav-tabs {
-      display: flex;
-      background: #fff;
-      border-radius: 8px;
-      padding: 6px;
-      gap: 6px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.06);
-      margin-bottom: 14px;
-    }
-    .nav-tab {
-      flex: 1;
-      text-align: center;
-      padding: 8px 4px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--subtext);
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      line-height: 1.2;
-    }
-    .nav-tab.active {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    /* Botões de Ação Visualizar/Baixar */
-    .action-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .btn-action-back {
-      flex: 1;
-      background: #1976d2;
-      color: #fff;
-      border: none;
-      padding: 10px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 12px;
-      cursor: pointer;
-      text-transform: uppercase;
-    }
-    .btn-action-print {
-      flex: 1;
-      background: var(--green);
-      color: #fff;
-      border: none;
-      padding: 10px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 12px;
-      cursor: pointer;
-      text-transform: uppercase;
-    }
-
-    /* Cartão de Conteúdo */
-    .content-card {
-      background: #fff;
-      border-radius: 8px;
-      padding: 16px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-      border: 1px solid var(--border);
-      margin-bottom: 14px;
-    }
-    .card-title-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
-    }
-    .card-title-bar h2 {
-      font-size: 13px;
-      font-weight: 800;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .btn-card-action {
-      background: #1976d2;
-      color: #fff;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 700;
-      cursor: pointer;
-      text-transform: uppercase;
-    }
-
-    /* Formulários e Inputs */
-    .form-group { margin-bottom: 10px; }
-    .form-group label {
-      display: block;
-      font-size: 10px;
-      font-weight: 800;
-      color: #475569;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-    }
-    .form-control {
-      width: 100%;
-      padding: 9px 10px;
-      border: 1px solid #cbd5e1;
-      border-radius: 5px;
-      font-size: 13px;
-      background: #fff;
-      outline: none;
-    }
-    .form-control:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(16, 59, 123, 0.15);
-    }
-    .form-row-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    /* Botão Azul Grande (Selecionar Logo / Fotos) */
-    .btn-big-blue {
-      width: 100%;
-      background: #2563eb;
-      color: #fff;
-      border: none;
-      padding: 12px;
-      border-radius: 6px;
-      font-weight: 800;
-      font-size: 11px;
-      text-transform: uppercase;
-      cursor: pointer;
-      margin-top: 4px;
-      margin-bottom: 12px;
-      display: block;
-      text-align: center;
-    }
-
-    /* Upload de Fotos */
-    .dropzone {
-      border: 2px dashed #94a3b8;
-      border-radius: 8px;
-      background: #f8fafc;
-      padding: 24px 12px;
-      text-align: center;
-      cursor: pointer;
-      margin-bottom: 14px;
-    }
-    .photo-card-item {
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-    .photo-card-item img {
-      width: 100%;
-      max-height: 250px;
-      object-fit: contain;
-      border-radius: 4px;
-      background: #000;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .btn-del-photo {
-      background: #ef4444;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 6px;
-    }
-
-    /* PÁGINA A4 (Ver Relatório) */
-    .a4-sheet {
-      background: #fff;
-      border-radius: 4px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      border: 1px solid #cbd5e1;
-    }
-    .a4-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #e2e8f0;
-      padding-bottom: 10px;
-      margin-bottom: 12px;
-    }
-    .a4-header-left img {
-      max-height: 48px;
-      width: auto;
-      display: block;
-    }
-    .a4-header-right {
-      font-size: 16px;
-      font-weight: 900;
-      color: var(--orange);
-      text-transform: uppercase;
-      text-align: right;
-    }
-
-    .a4-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 16px;
-    }
-    .a4-table td {
-      border: 1px solid #cbd5e1;
-      padding: 6px 8px;
-      font-size: 11px;
-    }
-    .a4-table .label {
-      font-weight: 800;
-      color: #334155;
-      background: #f8fafc;
-      width: 25%;
-    }
-
-    .a4-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .a4-photo-box {
-      border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      padding: 4px;
-      background: #fff;
-      page-break-inside: avoid;
-    }
-    .a4-photo-box img {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-      display: block;
-      border-radius: 2px;
-    }
-    .a4-photo-box p {
-      font-size: 10px;
-      font-weight: 700;
-      color: #1e293b;
-      margin-top: 4px;
-      text-align: center;
-    }
-
-    /* Login Modal */
-    .login-overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(16, 59, 123, 0.95);
-      z-index: 9999;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-    }
-    .login-box {
-      background: #fff;
-      width: 100%;
-      max-width: 380px;
-      border-radius: 10px;
-      padding: 24px 20px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-      text-align: center;
-    }
-    .login-box img {
-      max-width: 160px;
-      margin-bottom: 14px;
-    }
-
-    @media print {
-      body { background: #fff; padding: 0; }
-      .top-header, .nav-tabs, .action-row, #form-view, #saved-view { display: none !important; }
-      .app-wrap { max-width: 100%; margin: 0; padding: 0; }
-      .a4-sheet { box-shadow: none; border: none; padding: 0; width: 100%; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARPOL - Relatório Fotográfico</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 60px; }
+        header { background-color: #1e3a8a; color: white; padding: 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .brand { display: flex; align-items: center; gap: 10px; }
+        .brand-badge { background: #172554; border: 1px solid #3b82f6; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .brand-title { font-size: 16px; font-weight: 700; line-height: 1.1; }
+        .brand-sub { font-size: 11px; color: #93c5fd; }
+        
+        .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+        
+        .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: white; padding: 6px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .nav-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; background: transparent; color: #64748b; }
+        .nav-btn.active { background: #1e3a8a; color: white; }
+        
+        .card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card-title { font-size: 14px; font-weight: 700; color: #1e3a8a; text-transform: uppercase; margin-bottom: 12px; border-bottom: 2px solid #d97706; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
+        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background: #f8fafc; }
+        .form-control:focus { outline: none; border-color: #1e3a8a; background: white; }
+        .row { display: flex; gap: 10px; }
+        .col { flex: 1; }
+        
+        .btn-gold { background: #d97706; color: white; border: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; }
+        .btn-gold:hover { background: #b45309; }
+        .btn-blue { background: #2563eb; color: white; border: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; }
+        .btn-blue:hover { background: #1d4ed8; }
+        .btn-green { background: #059669; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; width: 100%; }
+        .btn-green:hover { background: #047857; }
+        
+        .photo-card { border: 2px dashed #93c5fd; background: #eff6ff; border-radius: 8px; padding: 12px; margin-bottom: 12px; position: relative; }
+        .photo-picker { height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: white; border-radius: 6px; border: 1px solid #bfdbfe; margin-bottom: 8px; position: relative; overflow: hidden; }
+        .photo-picker img { width: 100%; height: 100%; object-fit: contain; }
+        .photo-badge { position: absolute; top: 6px; left: 6px; background: #1e3a8a; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .btn-del { color: #dc2626; font-size: 12px; font-weight: bold; background: none; border: none; cursor: pointer; float: right; margin-top: 4px; }
+        
+        /* Lista de Salvos */
+        .history-item { border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .history-info h4 { font-size: 14px; color: #1e3a8a; }
+        .history-info p { font-size: 12px; color: #64748b; }
+        .history-actions { display: flex; gap: 6px; }
+        .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
+        
+        /* Modal de Login Supabase */
+        .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(30, 58, 138, 0.96); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .auth-box { background: white; width: 100%; max-width: 380px; padding: 24px 20px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); text-align: center; }
+        
+        /* Impressão / PDF A4 */
+        @media print {
+            body { background: white; padding: 0; }
+            header, .nav-tabs, #view-form, #view-history, .no-print, .auth-overlay { display: none !important; }
+            #view-preview { display: block !important; }
+            .a4-page { box-shadow: none !important; margin: 0 !important; width: 100% !important; padding: 10mm !important; }
+            .grid-print { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+            .print-item { page-break-inside: avoid; break-inside: avoid; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; }
+            .print-item img { max-height: 190px; width: 100%; object-fit: contain; }
+        }
+        
+        .a4-page { width: 100%; max-width: 210mm; background: white; margin: 0 auto; padding: 15mm; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .grid-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .preview-item { border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; background: white; }
+        .preview-item img { width: 100%; height: 180px; object-fit: contain; background: #f8fafc; border-radius: 4px; margin-bottom: 6px; }
+    </style>
 </head>
 <body>
 
-  <!-- Modal de Login Obrigatório -->
-  <div id="login-modal" class="login-overlay">
-    <div class="login-box">
-      <img src="logo-oficial.jpg" alt="ARPOL" onerror="this.style.display='none'">
-      <h3 style="font-size: 16px; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 16px;">Acesso do Técnico</h3>
-      <form id="auth-form">
-        <div class="form-group" style="text-align: left;">
-          <label>E-mail de Login</label>
-          <input type="email" id="log-email" class="form-control" placeholder="einstein@arpolar.com.br" required>
+    <!-- Bloqueio de Login Supabase -->
+    <div id="auth-gate" class="auth-overlay">
+        <div class="auth-box">
+            <div style="font-weight: 800; font-size: 20px; color: #1e3a8a; margin-bottom: 4px;">ARPOL</div>
+            <div style="font-size: 11px; font-weight: 700; color: #d97706; margin-bottom: 18px; text-transform: uppercase;">Acesso do Técnico</div>
+            <form id="form-auth">
+                <div class="form-group" style="text-align: left;">
+                    <label>E-mail</label>
+                    <input type="email" id="auth-email" class="form-control" placeholder="einstein@arpolar.com.br" required>
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Senha</label>
+                    <input type="password" id="auth-pass" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" id="btn-entrar" class="btn-green" style="margin-top: 8px;">Entrar no Sistema</button>
+            </form>
+            <div id="auth-err" style="color: #dc2626; font-size: 12px; font-weight: bold; margin-top: 10px; display: none;"></div>
         </div>
-        <div class="form-group" style="text-align: left;">
-          <label>Senha</label>
-          <input type="password" id="log-pass" class="form-control" placeholder="••••••••" required>
-        </div>
-        <button type="submit" id="btn-login" style="width: 100%; background: var(--primary); color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 800; font-size: 13px; text-transform: uppercase; cursor: pointer; margin-top: 8px;">Entrar no Sistema</button>
-      </form>
-      <div id="log-err" style="color: #ef4444; font-size: 12px; font-weight: 700; margin-top: 10px; display: none;"></div>
-    </div>
-  </div>
-
-  <!-- Topo Azul Original -->
-  <header class="top-header">
-    <div class="brand-left">
-      <div class="brand-box">ARPOL</div>
-      <div class="brand-text">
-        <h1>CONFORTO<br>TÉRMICO</h1>
-        <span>Sistema Online / Cloud</span>
-      </div>
-    </div>
-    <button class="btn-top-action" onclick="goToPreview()">VISUALIZAR / GERAR<br>PDF</button>
-  </header>
-
-  <div class="app-wrap">
-    <!-- Abas Originais -->
-    <nav class="nav-tabs">
-      <button class="nav-tab active" id="tab-btn-form" onclick="switchTab('form')">📝 Formulário<br>& Fotos</button>
-      <button class="nav-tab" id="tab-btn-preview" onclick="switchTab('preview')">📄 Ver<br>Relatório (A4)</button>
-      <button class="nav-tab" id="tab-btn-saved" onclick="switchTab('saved')">📁 Salvos no<br>Aparelho</button>
-    </nav>
-
-    <!-- Botões de Ação na visualização do Relatório -->
-    <div class="action-row" id="action-buttons-preview" style="display: none;">
-      <button class="btn-action-back" onclick="switchTab('form')">⬅ VOLTAR E EDITAR</button>
-      <button class="btn-action-print" onclick="window.print()">🖨 BAIXAR PDF / IMPRIMIR</button>
     </div>
 
-    <!-- 1. Formulário & Fotos -->
-    <main id="form-view">
-      <div class="content-card">
-        <div class="card-title-bar">
-          <h2>IDENTIFICAÇÃO</h2>
-          <button class="btn-card-action" onclick="resetForm()">+ LIMPAR / NOVO</button>
+    <!-- Cabeçalho Original -->
+    <header>
+        <div class="brand">
+            <div class="brand-badge">ARPOL</div>
+            <div>
+                <div class="brand-title">CONFORTO TÉRMICO</div>
+                <div class="brand-sub">Sistema Online / Cloud</div>
+            </div>
+        </div>
+        <div>
+            <button class="btn-gold" onclick="abrirAba('preview')" style="font-size: 12px; padding: 6px 10px;">Visualizar / Gerar PDF</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Navegação de Abas -->
+        <div class="nav-tabs no-print">
+            <button class="nav-btn active" id="btn-tab-form" onclick="abrirAba('form')">📝 Formulário & Fotos</button>
+            <button class="nav-btn" id="btn-tab-preview" onclick="abrirAba('preview')">📄 Ver Relatório (A4)</button>
+            <button class="nav-btn" id="btn-tab-history" onclick="abrirAba('history')">📂 Salvos no Aparelho</button>
         </div>
 
-        <div class="form-group">
-          <label>LOGO OFICIAL DA EMPRESA</label>
-          <button type="button" class="btn-big-blue" onclick="document.getElementById('logo-file-input').click()">SELECIONAR LOGO ARPOL (FICA SALVA NO APARELHO)</button>
-          <input type="file" id="logo-file-input" accept="image/*" style="display: none;" onchange="loadLogo(this)">
+        <!-- ABA 1: FORMULÁRIO -->
+        <div id="view-form">
+            <div class="card">
+                <div class="card-title">
+                    <span>Identificação</span>
+                    <button class="btn-blue" onclick="novoAtendimento()" style="font-size: 11px; padding: 4px 8px;">+ Limpar / Novo</button>
+                </div>
+                
+                <div class="form-group">
+                    <label>Logo Oficial da Empresa</label>
+                    <input type="file" id="logoInput" accept="image/*" style="display:none;" onchange="carregarLogo(event)">
+                    <button class="btn-blue" style="width: 100%; background: #3b82f6;" onclick="document.getElementById('logoInput').click()">Selecionar Logo ARPOL (Fica salva no aparelho)</button>
+                </div>
+
+                <div class="form-group">
+                    <label>ID do Atendimento</label>
+                    <input type="text" id="campoID" class="form-control" readonly style="font-weight: bold; color: #1e3a8a;">
+                </div>
+
+                <div class="row">
+                    <div class="col form-group">
+                        <label>Data</label>
+                        <input type="date" id="campoData" class="form-control">
+                    </div>
+                    <div class="col form-group">
+                        <label>Técnico Responsável</label>
+                        <input type="text" id="campoTecnico" class="form-control" placeholder="Seu nome">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Local / Endereço</label>
+                    <input type="text" id="campoLocal" class="form-control" placeholder="Ex: Hospital Einstein - Av. Albert Einstein">
+                </div>
+
+                <div class="row">
+                    <div class="col form-group">
+                        <label>Setor / Unidade</label>
+                        <input type="text" id="campoSetor" class="form-control" placeholder="Ex: Bloco B - 9º Andar">
+                    </div>
+                    <div class="col form-group">
+                        <label>Contato / Responsável</label>
+                        <input type="text" id="campoContato" class="form-control" placeholder="Nome do cliente">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Relatório Sobre</label>
+                    <input type="text" id="campoAssunto" class="form-control" placeholder="Ex: Vistoria e Troca de Peças">
+                </div>
+
+                <div class="form-group">
+                    <label>Notas / Observações</label>
+                    <textarea id="campoNotas" class="form-control" rows="2" placeholder="Observações adicionais do serviço..."></textarea>
+                </div>
+            </div>
+
+            <!-- Adicionar Fotos -->
+            <div class="card">
+                <div class="card-title">
+                    <span>Registro Fotográfico</span>
+                </div>
+                <div class="row" style="margin-bottom: 16px;">
+                    <button class="col btn-blue" onclick="adicionarFotoForm('FOTO INDIVIDUAL')">+ Foto Individual</button>
+                    <button class="col btn-gold" onclick="adicionarParForm()">+ Par Antes/Depois</button>
+                </div>
+
+                <div id="container-fotos-form"></div>
+            </div>
+
+            <div class="card" style="background: #f8fafc;">
+                <button class="btn-green" onclick="salvarRelatorioLocal()" style="margin-bottom: 10px;">💾 Salvar no Aparelho</button>
+                <div class="row">
+                    <button class="col btn-gold" onclick="abrirAba('preview')">👁️ Ver Relatório</button>
+                    <button class="col btn-blue" onclick="imprimirOuPdf()">🖨️ Imprimir / Salvar PDF</button>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group">
-          <label>ID DO ATENDIMENTO</label>
-          <input type="text" id="f-id" class="form-control" readonly>
+        <!-- ABA 2: VISUALIZAÇÃO A4 -->
+        <div id="view-preview" style="display: none;">
+            <div class="card no-print" style="display: flex; gap: 8px; justify-content: space-between;">
+                <button class="btn-blue" onclick="abrirAba('form')">⬅️ Voltar e Editar</button>
+                <button class="btn-green" onclick="imprimirOuPdf()" style="width: auto; padding: 10px 20px;">🖨️ Baixar PDF / Imprimir</button>
+            </div>
+
+            <div class="a4-page" id="relatorio-imprimir">
+                <!-- Cabeçalho A4 Formatado (Apenas Logo e Título à direita) -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d97706; padding-bottom: 10px; margin-bottom: 14px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <img id="preview-logo" src="" alt="ARPOL" style="height: 55px; max-width: 140px; object-fit: contain; display: none;">
+                        <div id="preview-logo-placeholder" style="font-weight: 800; font-size: 22px; color: #1e3a8a;">ARPOL</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-weight: 800; font-size: 16px; color: #d97706; text-transform: uppercase;">RELATÓRIO FOTOGRÁFICO</div>
+                    </div>
+                </div>
+
+                <!-- Tabela de Dados -->
+                <div style="margin-bottom: 16px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden;">
+                    <div style="display: flex; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                        <div style="width: 25%; padding: 6px 8px; font-weight: bold; color: #475569;">ID ATENDIMENTO:</div>
+                        <div style="width: 75%; padding: 6px 8px; font-weight: bold; color: #1e3a8a;" id="p-id">-</div>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #e2e8f0;">
+                        <div style="width: 25%; padding: 6px 8px; font-weight: bold; color: #475569;">DATA:</div>
+                        <div style="width: 25%; padding: 6px 8px;" id="p-data">-</div>
+                        <div style="width: 25%; padding: 6px 8px; font-weight: bold; color: #475569;">TÉCNICO:</div>
+                        <div style="width: 25%; padding: 6px 8px;" id="p-tecnico">-</div>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                        <div style="width: 25%; padding: 6px 8px; font-weight: bold; color: #475569;">LOCAL:</div>
+                        <div style="width: 75%; padding: 6px 8px;" id="p-local">-</div>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #e2e8f0;">
+                        <div style="width: 25%; padding: 6px 8px; font-weight: bold; color: #475569;">SETOR / CONTATO:</div>
+                        <div style="width: 75%; padding: 6px 8px;" id="p-setor-contato">-</div>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                        <div style="width: 25%; padding: 6px 8px; font-weight: bold; color: #475569;">ASSUNTO:</div>
+                        <div style="width: 75%; padding: 6px 8px;" id="p-assunto">-</div>
+                    </div>
+                    <div style="display: flex;">
+                        <div style="width: 25%; padding: 6px 8px; font-weight: bold; color: #475569;">NOTAS:</div>
+                        <div style="width: 75%; padding: 6px 8px;" id="p-notas">-</div>
+                    </div>
+                </div>
+
+                <!-- Grade de Fotos Econômica (Texto '4 A 6' removido conforme solicitado) -->
+                <div class="grid-preview grid-print" id="container-fotos-preview"></div>
+            </div>
         </div>
 
-        <div class="form-row-2">
-          <div class="form-group">
-            <label>DATA</label>
-            <input type="date" id="f-data" class="form-control">
-          </div>
-          <div class="form-group">
-            <label>TÉCNICO RESPONSÁVEL</label>
-            <input type="text" id="f-tecnico" class="form-control" placeholder="Nome do Técnico">
-          </div>
+        <!-- ABA 3: HISTÓRICO LOCAL -->
+        <div id="view-history" style="display: none;">
+            <div class="card">
+                <div class="card-title">
+                    <span>Relatórios Gravados neste Dispositivo</span>
+                    <button class="btn-blue" onclick="atualizarListaHistorico()" style="font-size: 11px; padding: 4px 8px;">🔄 Atualizar</button>
+                </div>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
+                    Estes relatórios estão salvos <b>apenas na memória deste aparelho</b>. Você pode reabrir qualquer um para editar dados, trocar fotos ou gerar novos PDFs a qualquer momento.
+                </p>
+                <div id="lista-historico"></div>
+            </div>
         </div>
+    </div>
 
-        <div class="form-group">
-          <label>LOCAL / ENDEREÇO</label>
-          <input type="text" id="f-local" class="form-control" placeholder="Ex: Hospital Albert Einstein">
-        </div>
+    <script>
+        // Supabase Auth
+        const SUPABASE_URL = "https://hkxgqsxrpgznlnhvmvaj.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzOTIyNTUsImV4cCI6MjEwODk2ODI1NX0.hHYuiCxqU4KTKoHNlzYD3i1qGt2hPZCJMt2MQvIOHNw";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        <div class="form-row-2">
-          <div class="form-group">
-            <label>SETOR / UNIDADE</label>
-            <input type="text" id="f-setor" class="form-control" placeholder="Ex: Bloco B - 3º Andar">
-          </div>
-          <div class="form-group">
-            <label>CONTATO / RESPONSÁVEL</label>
-            <input type="text" id="f-contato" class="form-control" placeholder="Nome do cliente">
-          </div>
-        </div>
+        let fotos = [];
+        let logoBase64 = localStorage.getItem('arpol_app_logo') || '';
 
-        <div class="form-group">
-          <label>RELATÓRIO SOBRE</label>
-          <input type="text" id="f-assunto" class="form-control" placeholder="Ex: Manutenção Preventiva Chiller">
-        </div>
-
-        <div class="form-group">
-          <label>NOTAS / OBSERVAÇÕES</label>
-          <textarea id="f-notas" class="form-control" rows="2" placeholder="Observações adicionais do serviço..."></textarea>
-        </div>
-      </div>
-
-      <!-- Anexar Fotos -->
-      <div class="content-card">
-        <div class="dropzone" onclick="document.getElementById('photo-upload').click()">
-          <div style="font-size: 24px; margin-bottom: 4px;">📷</div>
-          <div style="font-size: 13px; font-weight: 800; color: var(--primary);">Toque para anexar fotos</div>
-          <div style="font-size: 11px; color: #64748b;">Suporta imagens da galeria ou câmera direta</div>
-          <input type="file" id="photo-upload" accept="image/*" multiple style="display: none;" onchange="handleNewPhotos(this.files)">
-        </div>
-
-        <div id="photos-container"></div>
-      </div>
-    </main>
-
-    <!-- 2. Ver Relatório (A4) -->
-    <section id="preview-view" style="display: none;">
-      <div class="a4-sheet">
-        <div class="a4-header">
-          <div class="a4-header-left">
-            <img id="rpt-logo-img" src="logo-oficial.jpg" alt="ARPOL" onerror="this.src='https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png'">
-          </div>
-          <div class="a4-header-right">
-            RELATÓRIO FOTOGRÁFICO
-          </div>
-        </div>
-
-        <table class="a4-table">
-          <tr>
-            <td class="label">ID ATENDIMENTO:</td>
-            <td id="r-id">-</td>
-            <td class="label">DATA:</td>
-            <td id="r-data">-</td>
-          </tr>
-          <tr>
-            <td class="label">TÉCNICO:</td>
-            <td id="r-tecnico">-</td>
-            <td class="label">LOCAL:</td>
-            <td id="r-local">-</td>
-          </tr>
-          <tr>
-            <td class="label">SETOR:</td>
-            <td id="r-setor">-</td>
-            <td class="label">CONTATO:</td>
-            <td id="r-contato">-</td>
-          </tr>
-          <tr>
-            <td class="label">ASSUNTO:</td>
-            <td colspan="3" id="r-assunto">-</td>
-          </tr>
-          <tr>
-            <td class="label">NOTAS:</td>
-            <td colspan="3" id="r-notas">Sem observações complementares.</td>
-          </tr>
-        </table>
-
-        <div class="a4-grid" id="rpt-photos-list"></div>
-      </div>
-    </section>
-
-    <!-- 3. Salvos no Aparelho -->
-    <section id="saved-view" style="display: none;">
-      <div class="content-card">
-        <div class="card-title-bar">
-          <h2>RELATÓRIOS SALVOS LOCALMENTE</h2>
-        </div>
-        <p style="font-size: 12px; color: var(--subtext);">Os relatórios gerados ficam armazenados no navegador do seu aparelho para consulta rápida.</p>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    // Configuração Supabase
-    const SUPABASE_URL = "https://hkxgqsxrpgznlnhvmvaj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzOTIyNTUsImV4cCI6MjEwODk2ODI1NX0.hHYuiCxqU4KTKoHNlzYD3i1qGt2hPZCJMt2MQvIOHNw";
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let photos = [];
-    let customLogo = localStorage.getItem("arpol_custom_logo") || "";
-
-    window.addEventListener("DOMContentLoaded", async () => {
-      resetForm();
-      if (customLogo) {
-        document.getElementById("rpt-logo-img").src = customLogo;
-      }
-      checkAuth();
-    });
-
-    async function checkAuth() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        document.getElementById("login-modal").style.display = "none";
-      } else {
-        document.getElementById("login-modal").style.display = "flex";
-      }
-    }
-
-    document.getElementById("auth-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("log-email").value.trim();
-      const password = document.getElementById("log-pass").value;
-      const errBox = document.getElementById("log-err");
-      const btn = document.getElementById("btn-login");
-
-      errBox.style.display = "none";
-      btn.innerText = "VERIFICANDO...";
-
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) {
-        errBox.innerText = "Erro: Usuário ou senha incorretos.";
-        errBox.style.display = "block";
-      } else {
-        document.getElementById("login-modal").style.display = "none";
-      }
-      btn.innerText = "ENTRAR NO SISTEMA";
-    });
-
-    function resetForm() {
-      const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
-      const today = new Date().toISOString().split("T")[0];
-      document.getElementById("f-id").value = `ATD-${today.replace(/-/g, "")}-${randomCode}`;
-      document.getElementById("f-data").value = today;
-      document.getElementById("f-tecnico").value = "Sandro";
-      document.getElementById("f-local").value = "";
-      document.getElementById("f-setor").value = "";
-      document.getElementById("f-contato").value = "";
-      document.getElementById("f-assunto").value = "";
-      document.getElementById("f-notas").value = "";
-      photos = [];
-      renderPhotos();
-    }
-
-    function switchTab(tab) {
-      document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
-      document.getElementById("action-buttons-preview").style.display = "none";
-      document.getElementById("form-view").style.display = "none";
-      document.getElementById("preview-view").style.display = "none";
-      document.getElementById("saved-view").style.display = "none";
-
-      if (tab === "form") {
-        document.getElementById("tab-btn-form").classList.add("active");
-        document.getElementById("form-view").style.display = "block";
-      } else if (tab === "preview") {
-        document.getElementById("tab-btn-preview").classList.add("active");
-        document.getElementById("action-buttons-preview").style.display = "flex";
-        syncPreview();
-        document.getElementById("preview-view").style.display = "block";
-      } else if (tab === "saved") {
-        document.getElementById("tab-btn-saved").classList.add("active");
-        document.getElementById("saved-view").style.display = "block";
-      }
-    }
-
-    function goToPreview() {
-      switchTab("preview");
-    }
-
-    function syncPreview() {
-      document.getElementById("r-id").innerText = document.getElementById("f-id").value || "-";
-      document.getElementById("r-data").innerText = document.getElementById("f-data").value || "-";
-      document.getElementById("r-tecnico").innerText = document.getElementById("f-tecnico").value || "-";
-      document.getElementById("r-local").innerText = document.getElementById("f-local").value || "-";
-      document.getElementById("r-setor").innerText = document.getElementById("f-setor").value || "-";
-      document.getElementById("r-contato").innerText = document.getElementById("f-contato").value || "-";
-      document.getElementById("r-assunto").innerText = document.getElementById("f-assunto").value || "-";
-      document.getElementById("r-notas").innerText = document.getElementById("f-notas").value || "Sem observações complementares.";
-
-      const grid = document.getElementById("rpt-photos-list");
-      grid.innerHTML = "";
-      photos.forEach(item => {
-        const box = document.createElement("div");
-        box.className = "a4-photo-box";
-        box.innerHTML = `
-          <img src="${item.url}" alt="Foto">
-          <p>${item.desc || "Sem legenda"}</p>
-        `;
-        grid.appendChild(box);
-      });
-    }
-
-    function handleNewPhotos(files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          photos.push({ id: Date.now() + Math.random(), url: e.target.result, desc: "" });
-          renderPhotos();
+        window.onload = function() {
+            verificarSessao();
+            if (logoBase64) {
+                const img = document.getElementById('preview-logo');
+                img.src = logoBase64;
+                img.style.display = 'block';
+                document.getElementById('preview-logo-placeholder').style.display = 'none';
+            }
+            novoAtendimento();
+            atualizarListaHistorico();
         };
-        reader.readAsDataURL(file);
-      });
-    }
 
-    function renderPhotos() {
-      const container = document.getElementById("photos-container");
-      container.innerHTML = "";
-      photos.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "photo-card-item";
-        div.innerHTML = `
-          <img src="${item.url}">
-          <input type="text" class="form-control" placeholder="Legenda da foto #${index + 1}" value="${item.desc}" oninput="updateDesc(${item.id}, this.value)">
-          <button class="btn-del-photo" onclick="deletePhoto(${item.id})">Remover Foto</button>
-        `;
-        container.appendChild(div);
-      });
-    }
+        async function verificarSessao() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                document.getElementById('auth-gate').style.display = 'none';
+            } else {
+                document.getElementById('auth-gate').style.display = 'flex';
+            }
+        }
 
-    function updateDesc(id, val) {
-      const p = photos.find(x => x.id === id);
-      if (p) p.desc = val;
-    }
+        document.getElementById('form-auth').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-pass').value;
+            const errBox = document.getElementById('auth-err');
+            const btn = document.getElementById('btn-entrar');
 
-    function deletePhoto(id) {
-      photos = photos.filter(x => x.id !== id);
-      renderPhotos();
-    }
+            errBox.style.display = 'none';
+            btn.innerText = 'Verificando...';
 
-    function loadLogo(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          customLogo = e.target.result;
-          localStorage.setItem("arpol_custom_logo", customLogo);
-          document.getElementById("rpt-logo-img").src = customLogo;
-          alert("Logo salva com sucesso!");
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-  </script>
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) {
+                errBox.innerText = 'E-mail ou senha incorretos.';
+                errBox.style.display = 'block';
+            } else {
+                document.getElementById('auth-gate').style.display = 'none';
+            }
+            btn.innerText = 'Entrar no Sistema';
+        });
+
+        function abrirAba(aba) {
+            document.getElementById('view-form').style.display = (aba === 'form') ? 'block' : 'none';
+            document.getElementById('view-preview').style.display = (aba === 'preview') ? 'block' : 'none';
+            document.getElementById('view-history').style.display = (aba === 'history') ? 'block' : 'none';
+            
+            document.getElementById('btn-tab-form').className = 'nav-btn' + (aba === 'form' ? ' active' : '');
+            document.getElementById('btn-tab-preview').className = 'nav-btn' + (aba === 'preview' ? ' active' : '');
+            document.getElementById('btn-tab-history').className = 'nav-btn' + (aba === 'history' ? ' active' : '');
+            
+            if (aba === 'preview') atualizarPreview();
+            if (aba === 'history') atualizarListaHistorico();
+            window.scrollTo(0, 0);
+        }
+
+        function novoAtendimento() {
+            const dataStr = new Date().toISOString().slice(0,10).replace(/-/g,'');
+            const random = Math.random().toString(36).substring(2,7).toUpperCase();
+            document.getElementById('campoID').value = 'ATD-' + dataStr + '-' + random;
+            document.getElementById('campoData').value = new Date().toISOString().split('T')[0];
+            document.getElementById('campoTecnico').value = localStorage.getItem('arpol_ultimo_tecnico') || '';
+            document.getElementById('campoLocal').value = '';
+            document.getElementById('campoSetor').value = '';
+            document.getElementById('campoContato').value = '';
+            document.getElementById('campoAssunto').value = '';
+            document.getElementById('campoNotas').value = '';
+            fotos = [];
+            renderizarFotosForm();
+        }
+
+        function carregarLogo(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    logoBase64 = evt.target.result;
+                    localStorage.setItem('arpol_app_logo', logoBase64);
+                    const img = document.getElementById('preview-logo');
+                    img.src = logoBase64;
+                    img.style.display = 'block';
+                    document.getElementById('preview-logo-placeholder').style.display = 'none';
+                    alert('Logo gravada com sucesso na memória deste aparelho!');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function adicionarFotoForm(tipo) {
+            const id = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+            fotos.push({ id: id, tipo: tipo, dataUrl: '', local: '', desc: '' });
+            renderizarFotosForm();
+        }
+
+        function adicionarParForm() {
+            adicionarFotoForm('ANTES');
+            adicionarFotoForm('DEPOIS / TROCADO');
+        }
+
+        function renderizarFotosForm() {
+            const c = document.getElementById('container-fotos-form');
+            c.innerHTML = '';
+            if (fotos.length === 0) {
+                c.innerHTML = '<div style="text-align:center; padding: 20px; color:#94a3b8; font-size:13px;">Nenhuma foto adicionada ainda. Clique nos botões acima.</div>';
+                return;
+            }
+
+            fotos.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'photo-card';
+                div.innerHTML = `
+                    <div style="overflow: hidden; margin-bottom: 6px;">
+                        <button class="btn-del" onclick="removerFoto(${index})">🗑️ Excluir Foto</button>
+                    </div>
+                    <label class="photo-picker" for="file_input_${item.id}">
+                        <div class="photo-badge">${item.tipo}</div>
+                        ${item.dataUrl ? `<img src="${item.dataUrl}">` : `<div style="text-align:center; color:#3b82f6; font-size:13px; font-weight:600;"><span style="font-size:32px;">📷</span><br>TOCAR PARA TIRAR OU ESCOLHER FOTO</div>`}
+                    </label>
+                    <input type="file" id="file_input_${item.id}" accept="image/*" style="display:none;" onchange="capturarFoto(event, ${index})">
+                    <div class="form-group" style="margin-bottom:6px;">
+                        <input type="text" class="form-control" placeholder="Local / Equipamento (Ex: Evaporadora Bloco B)" value="${item.local}" oninput="fotos[${index}].local = this.value">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <input type="text" class="form-control" placeholder="Descrição do que foi feito ou detectado" value="${item.desc}" oninput="fotos[${index}].desc = this.value">
+                    </div>
+                `;
+                c.appendChild(div);
+            });
+        }
+
+        function capturarFoto(e, index) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width;
+                        let h = img.height;
+                        const max = 1200;
+                        if (w > max || h > max) {
+                            if (w > h) { h = Math.round((h * max) / w); w = max; }
+                            else { w = Math.round((w * max) / h); h = max; }
+                        }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        fotos[index].dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                        renderizarFotosForm();
+                    };
+                    img.src = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removerFoto(index) {
+            fotos.splice(index, 1);
+            renderizarFotosForm();
+        }
+
+        function atualizarPreview() {
+            document.getElementById('p-id').innerText = document.getElementById('campoID').value;
+            document.getElementById('p-data').innerText = document.getElementById('campoData').value || '-';
+            document.getElementById('p-tecnico').innerText = document.getElementById('campoTecnico').value || '-';
+            document.getElementById('p-local').innerText = document.getElementById('campoLocal').value || '-';
+            const setor = document.getElementById('campoSetor').value || '';
+            const contato = document.getElementById('campoContato').value || '';
+            document.getElementById('p-setor-contato').innerText = (setor + (setor && contato ? ' / ' : '') + contato) || '-';
+            document.getElementById('p-assunto').innerText = document.getElementById('campoAssunto').value || '-';
+            document.getElementById('p-notas').innerText = document.getElementById('campoNotas').value || 'Sem observações complementares.';
+
+            const container = document.getElementById('container-fotos-preview');
+            container.innerHTML = '';
+            if (fotos.length === 0) {
+                container.innerHTML = '<div style="grid-column: span 2; text-align: center; color: #94a3b8; padding: 20px;">Nenhuma foto anexada.</div>';
+                return;
+            }
+
+            fotos.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'preview-item print-item';
+                div.innerHTML = `
+                    <div style="font-size: 10px; font-weight: bold; color: #d97706; text-transform: uppercase; margin-bottom: 4px;">${item.tipo}</div>
+                    <img src="${item.dataUrl || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect fill=\'%23f1f5f9\' width=\'100\' height=\'100\'/><text x=\'50%\' y=\'50%\' text-anchor=\'middle\' fill=\'%2394a3b8\' font-size=\'12\'>Sem Imagem</text></svg>'}">
+                    <div style="font-size: 11px; font-weight: bold; color: #1e3a8a; margin-bottom: 2px;">${item.local || '-'}</div>
+                    <div style="font-size: 10px; color: #475569; line-height: 1.2;">${item.desc || '-'}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function salvarRelatorioLocal() {
+            const id = document.getElementById('campoID').value;
+            const relatorio = {
+                id: id,
+                data: document.getElementById('campoData').value,
+                tecnico: document.getElementById('campoTecnico').value,
+                local: document.getElementById('campoLocal').value,
+                setor: document.getElementById('campoSetor').value,
+                contato: document.getElementById('campoContato').value,
+                assunto: document.getElementById('campoAssunto').value,
+                notas: document.getElementById('campoNotas').value,
+                fotos: fotos,
+                atualizadoEm: new Date().toLocaleString()
+            };
+
+            let salvos = JSON.parse(localStorage.getItem('arpol_relatorios') || '{}');
+            salvos[id] = relatorio;
+            localStorage.setItem('arpol_relatorios', JSON.stringify(salvos));
+            if (relatorio.tecnico) localStorage.setItem('arpol_ultimo_tecnico', relatorio.tecnico);
+            alert('Relatório gravado com sucesso no seu dispositivo!');
+            atualizarListaHistorico();
+        }
+
+        function atualizarListaHistorico() {
+            const container = document.getElementById('lista-historico');
+            const salvos = JSON.parse(localStorage.getItem('arpol_relatorios') || '{}');
+            const chaves = Object.keys(salvos).reverse();
+            container.innerHTML = '';
+
+            if (chaves.length === 0) {
+                container.innerHTML = '<div style="color:#94a3b8; text-align:center; padding:20px;">Nenhum relatório salvo no histórico deste dispositivo.</div>';
+                return;
+            }
+
+            chaves.forEach(k => {
+                const rel = salvos[k];
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <div class="history-info">
+                        <h4>${rel.id} - ${rel.local || 'Sem Local'}</h4>
+                        <p>${rel.data || ''} | ${rel.fotos ? rel.fotos.length : 0} fotos | Técnico: ${rel.tecnico || '-'}</p>
+                    </div>
+                    <div class="history-actions">
+                        <button class="btn-sm btn-blue" onclick="carregarParaEditar('${rel.id}')">✏️ Abrir / Editar</button>
+                        <button class="btn-sm btn-del" onclick="excluirDoHistorico('${rel.id}')">Excluir</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function carregarParaEditar(id) {
+            const salvos = JSON.parse(localStorage.getItem('arpol_relatorios') || '{}');
+            const rel = salvos[id];
+            if (!rel) return;
+            document.getElementById('campoID').value = rel.id;
+            document.getElementById('campoData').value = rel.data || '';
+            document.getElementById('campoTecnico').value = rel.tecnico || '';
+            document.getElementById('campoLocal').value = rel.local || '';
+            document.getElementById('campoSetor').value = rel.setor || '';
+            document.getElementById('campoContato').value = rel.contato || '';
+            document.getElementById('campoAssunto').value = rel.assunto || '';
+            document.getElementById('campoNotas').value = rel.notas || '';
+            fotos = rel.fotos || [];
+            renderizarFotosForm();
+            abrirAba('form');
+        }
+
+        function excluirDoHistorico(id) {
+            if (confirm('Tem certeza que deseja apagar este relatório deste aparelho?')) {
+                let salvos = JSON.parse(localStorage.getItem('arpol_relatorios') || '{}');
+                delete salvos[id];
+                localStorage.setItem('arpol_relatorios', JSON.stringify(salvos));
+                atualizarListaHistorico();
+            }
+        }
+
+        function imprimirOuPdf() {
+            atualizarPreview();
+            abrirAba('preview');
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+    </script>
 </body>
 </html>
