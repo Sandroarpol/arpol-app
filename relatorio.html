@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório Fotográfico - ARPOL</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-dark: #172554;
+      --accent: #f59e0b;
+      --bg: #f8fafc;
+      --text: #0f172a;
+      --border: #cbd5e1;
+      --white: #ffffff;
+      --danger: #ef4444;
+      --success: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 40px; }
+
+    /* Barra Superior */
+    .top-bar {
+      background: var(--primary);
+      color: var(--white);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .top-bar-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .btn-logout {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: var(--white);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Container Principal */
+    .container {
+      max-width: 800px;
+      margin: 16px auto;
+      padding: 0 16px;
+    }
+
+    /* Card de Login */
+    .auth-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 28px 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+      max-width: 420px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    .auth-logo {
+      max-width: 200px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    .auth-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    .form-group {
+      margin-bottom: 14px;
+      text-align: left;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+    .form-control {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      background: #fff;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.15);
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 10px;
+      text-transform: uppercase;
+    }
+
+    /* Painel do Formulário */
+    .card {
+      background: var(--white);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 600px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    /* Ações de navegação */
+    .action-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn-action {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-orange { background: #ea580c; color: #fff; }
+    .btn-blue { background: var(--primary); color: #fff; }
+    .btn-green { background: #16a34a; color: #fff; }
+
+    /* Bloco de Fotos (Modo Edição) */
+    .photo-upload-zone {
+      border: 2px dashed #94a3b8;
+      border-radius: 8px;
+      padding: 24px 16px;
+      text-align: center;
+      background: #f1f5f9;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .photo-item {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .photo-preview {
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: #000;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .btn-remove-photo {
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    /* FOLHA DE RELATÓRIO A4 (Visualização e Impressão) */
+    .a4-page {
+      background: #fff;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto 20px auto;
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+      box-sizing: border-box;
+    }
+    .report-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+    .report-header img {
+      max-height: 60px;
+      width: auto;
+    }
+    .report-header-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #ea580c;
+      text-transform: uppercase;
+      text-align: right;
+      letter-spacing: 0.5px;
+    }
+
+    .report-info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+    }
+    .report-info-table td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .report-info-table .lbl {
+      font-weight: 800;
+      color: #334155;
+      background: #f8fafc;
+      width: 25%;
+    }
+
+    /* Grade 2x2 ou 2x3 para 4 a 6 fotos por folha A4 */
+    .report-photos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .report-photo-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 6px;
+      background: #fff;
+      break-inside: avoid;
+    }
+    .report-photo-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+      border-radius: 3px;
+    }
+    .report-photo-desc {
+      font-size: 11px;
+      color: #1e293b;
+      margin-top: 4px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* Configuração de Impressão (PDF Direto) */
+    @media print {
+      body { background: #fff; padding: 0; }
+      .top-bar, .action-bar, #form-section, .btn-remove-photo, .photo-upload-zone { display: none !important; }
+      .container { max-width: 100%; padding: 0; margin: 0; }
+      .a4-page {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        width: 100%;
+        page-break-after: always;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Tela de Login -->
+  <div id="auth-section" class="container">
+    <div class="auth-card">
+      <img id="logo-preview-login" class="auth-logo" alt="ARPOL">
+      <div class="auth-title">Acesso do Técnico</div>
+      <form id="login-form">
+        <div class="form-group">
+          <label>E-mail de Login</label>
+          <input type="email" id="login-email" class="form-control" placeholder="ex: einstein@arpolar.com.br" required>
+        </div>
+        <div class="form-group">
+          <label>Palavra-passe</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-submit" id="btn-login-submit">Entrar no Sistema</button>
+      </form>
+      <div id="login-error" style="color: var(--danger); font-size: 13px; font-weight: 600; margin-top: 12px; display: none;"></div>
+    </div>
+  </div>
+
+  <!-- Aplicação Principal (Oculta até autenticar) -->
+  <div id="app-section" style="display: none;">
+    <div class="top-bar">
+      <div class="top-bar-title">Relatório Fotográfico</div>
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+
+    <div class="container">
+      <div class="action-bar" style="margin-top: 16px;">
+        <button class="btn-action btn-blue" id="tab-form" onclick="switchView('form')">✏️ Formulário & Fotos</button>
+        <button class="btn-action btn-orange" id="tab-preview" onclick="switchView('preview')">📄 Ver Relatório</button>
+        <button class="btn-action btn-green" onclick="window.print()">🖨️ Baixar PDF</button>
+      </div>
+
+      <!-- Seção do Formulário -->
+      <div id="form-section">
+        <div class="card">
+          <div class="grid-2">
+            <div class="form-group">
+              <label>ID Atendimento</label>
+              <input type="text" id="inp-id" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label>Data</label>
+              <input type="date" id="inp-data" class="form-control">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Técnico Responsável</label>
+              <input type="text" id="inp-tecnico" class="form-control" placeholder="Nome do Técnico">
+            </div>
+            <div class="form-group">
+              <label>Local / Cliente</label>
+              <input type="text" id="inp-local" class="form-control" placeholder="Ex: Hospital Albert Einstein">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label>Setor / Contato</label>
+              <input type="text" id="inp-setor" class="form-control" placeholder="Ex: Bloco B - 3º Andar">
+            </div>
+            <div class="form-group">
+              <label>Assunto</label>
+              <input type="text" id="inp-assunto" class="form-control" placeholder="Ex: Manutenção Preventiva Chiller">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notas Complementares</label>
+            <textarea id="inp-notas" class="form-control" rows="2" placeholder="Observações técnicas..."></textarea>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="photo-upload-zone" onclick="document.getElementById('file-input').click()">
+            <div style="font-size: 24px; margin-bottom: 6px;">📷</div>
+            <div style="font-weight: 700; color: var(--primary);">Toque para anexar fotos</div>
+            <div style="font-size: 12px; color: #64748b;">Suporta imagens da galeria ou câmera direta</div>
+            <input type="file" id="file-input" accept="image/*" multiple style="display: none;" onchange="handleFiles(this.files)">
+          </div>
+
+          <div id="photos-list"></div>
+        </div>
+      </div>
+
+      <!-- Seção do Relatório A4 Formatado -->
+      <div id="preview-section" style="display: none;">
+        <div class="a4-page">
+          <div class="report-header">
+            <img id="logo-preview-report" alt="ARPOL">
+            <div class="report-header-title">Relatório Fotográfico</div>
+          </div>
+
+          <table class="report-info-table">
+            <tr>
+              <td class="lbl">ID ATENDIMENTO:</td>
+              <td id="rpt-id">-</td>
+              <td class="lbl">DATA:</td>
+              <td id="rpt-data">-</td>
+            </tr>
+            <tr>
+              <td class="lbl">TÉCNICO:</td>
+              <td id="rpt-tecnico">-</td>
+              <td class="lbl">LOCAL:</td>
+              <td id="rpt-local">-</td>
+            </tr>
+            <tr>
+              <td class="lbl">SETOR / CONTATO:</td>
+              <td id="rpt-setor">-</td>
+              <td class="lbl">ASSUNTO:</td>
+              <td id="rpt-assunto">-</td>
+            </tr>
+            <tr>
+              <td class="lbl">NOTAS:</td>
+              <td colspan="3" id="rpt-notas">Sem observações complementares.</td>
+            </tr>
+          </table>
+
+          <div class="report-photos-grid" id="rpt-photos-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Logótipo oficial da ARPOL em Base64
+    const LOGO_ARPOL_SRC = "https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png";
+
+    // Configuração Supabase
+    const SUPABASE_URL = "https://ydmvhvhayveypfjmjetgg.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlkbXZodmhheXZleXBmam1qZXRnZyIsInJvbGUiOiJhbW9uIiwiaWF0IjoxNzMwMzg5NzU1LCJleHAiOjIwNDU5NjU3NTV9.g1RkG4a9M16QzWd7t2y7B1Z8eR1Vq_0P9_vVz7jN_Lw";
+    
+    let supabaseClient = null;
+    try {
+      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.warn("Supabase local fallback ativado.");
+    }
+
+    let reportPhotos = [];
+
+    // Inicialização da página
+    window.addEventListener('DOMContentLoaded', async () => {
+      document.getElementById('logo-preview-login').src = LOGO_ARPOL_SRC;
+      document.getElementById('logo-preview-report').src = LOGO_ARPOL_SRC;
+
+      // Gera ID automático e data do dia
+      const randomCode = Math.random().toString(36).substring(2, 7).toUpperCase();
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('inp-id').value = `ATD-${today.replace(/-/g, '')}-${randomCode}`;
+      document.getElementById('inp-data').value = today;
+
+      checkSession();
+    });
+
+    // Verificação de Sessão do Usuário
+    async function checkSession() {
+      if (!supabaseClient) return;
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        showApp();
+      } else {
+        showLogin();
+      }
+    }
+
+    function showApp() {
+      document.getElementById('auth-section').style.display = 'none';
+      document.getElementById('app-section').style.display = 'block';
+    }
+
+    function showLogin() {
+      document.getElementById('auth-section').style.display = 'block';
+      document.getElementById('app-section').style.display = 'none';
+    }
+
+    // Formulário de Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errBox = document.getElementById('login-error');
+      const btn = document.getElementById('btn-login-submit');
+
+      errBox.style.display = 'none';
+      btn.innerText = "Verificando...";
+
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        showApp();
+      } catch (err) {
+        errBox.innerText = "Acesso negado ou usuário desativado no painel.";
+        errBox.style.display = 'block';
+      } finally {
+        btn.innerText = "Entrar no Sistema";
+      }
+    });
+
+    async function logout() {
+      if (supabaseClient) await supabaseClient.auth.signOut();
+      showLogin();
+    }
+
+    // Alternar Visualização (Edição vs Relatório A4)
+    function switchView(view) {
+      if (view === 'form') {
+        document.getElementById('form-section').style.display = 'block';
+        document.getElementById('preview-section').style.display = 'none';
+      } else {
+        syncReportPreview();
+        document.getElementById('form-section').style.display = 'none';
+        document.getElementById('preview-section').style.display = 'block';
+      }
+    }
+
+    // Sincronizar dados para visualização/PDF
+    function syncReportPreview() {
+      document.getElementById('rpt-id').innerText = document.getElementById('inp-id').value || '-';
+      document.getElementById('rpt-data').innerText = document.getElementById('inp-data').value || '-';
+      document.getElementById('rpt-tecnico').innerText = document.getElementById('inp-tecnico').value || '-';
+      document.getElementById('rpt-local').innerText = document.getElementById('inp-local').value || '-';
+      document.getElementById('rpt-setor').innerText = document.getElementById('inp-setor').value || '-';
+      document.getElementById('rpt-assunto').innerText = document.getElementById('inp-assunto').value || '-';
+      document.getElementById('rpt-notas').innerText = document.getElementById('inp-notas').value || 'Sem observações complementares.';
+
+      const grid = document.getElementById('rpt-photos-grid');
+      grid.innerHTML = '';
+      reportPhotos.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = 'report-photo-card';
+        card.innerHTML = `
+          <img src="${item.url}" alt="Foto">
+          <div class="report-photo-desc">${item.desc || 'Sem descrição'}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Manipulação de Fotos
+    function handleFiles(files) {
+      Array.from(files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const photoObj = { id: Date.now() + Math.random(), url: e.target.result, desc: '' };
+          reportPhotos.push(photoObj);
+          renderPhotosForm();
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderPhotosForm() {
+      const container = document.getElementById('photos-list');
+      container.innerHTML = '';
+      reportPhotos.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'photo-item';
+        div.innerHTML = `
+          <img src="${item.url}" class="photo-preview">
+          <input type="text" class="form-control" placeholder="Legenda da Foto #${index + 1}" value="${item.desc}" oninput="updatePhotoDesc(${item.id}, this.value)">
+          <button class="btn-remove-photo" onclick="removePhoto(${item.id})">Remover Foto</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function updatePhotoDesc(id, desc) {
+      const p = reportPhotos.find(x => x.id === id);
+      if (p) p.desc = desc;
+    }
+
+    function removePhoto(id) {
+      reportPhotos = reportPhotos.filter(x => x.id !== id);
+      renderPhotosForm();
+    }
+  </script>
+</body>
+</html>
