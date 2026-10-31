@@ -132,6 +132,29 @@
             cursor: pointer;
         }
         .btn-add:hover { background: var(--primary-hover); }
+        .btn-gold {
+            background: #d97706;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-gold:hover { background: #b45309; }
+        .btn-blue {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-blue:hover { background: #0369a1; }
+        
         table {
             width: 100%;
             border-collapse: collapse;
@@ -171,6 +194,76 @@
             margin-right: 4px;
         }
         .btn-action.out { background: #495057; }
+
+        /* MODAL DE PRÉ-VISUALIZAÇÃO A4 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.75);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 860px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding: 24px;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        /* ESTILOS DE IMPRESSÃO / SALVAR EM PDF */
+        @media print {
+            body {
+                background: white !important;
+                padding: 0 !important;
+                color: black !important;
+            }
+            .status-bar, header, .main-nav, #pane-estoque, .btn-toolbar, .no-print, .modal-overlay {
+                display: none !important;
+            }
+            .content-container {
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            #pane-relatorios {
+                display: block !important;
+            }
+            .section-card {
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+                margin-bottom: 16px !important;
+                page-break-inside: avoid;
+            }
+            .print-only-header {
+                display: flex !important;
+                justify-content: space-between;
+                align-items: center;
+                border-bottom: 2px solid #0F5132;
+                padding-bottom: 12px;
+                margin-bottom: 20px;
+            }
+        }
+        .print-only-header {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -178,6 +271,21 @@
     <div class="status-bar">
         <span>✅ <strong>Acesso Direto ARPOL:</strong> Sandro Ricardo (Administrador)</span>
         <span id="sync-status">🟢 Almoxarifado Conectado</span>
+    </div>
+
+    <!-- CABEÇALHO DE IMPRESSÃO OFICIAL (Aparece apenas ao gerar PDF/Imprimir) -->
+    <div class="print-only-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="logo-oficial.jpg" alt="ARPOL" style="height: 48px; width: auto; object-fit: contain;">
+            <div>
+                <div style="font-size: 16px; font-weight: 800; color: #0F5132;">ARPOL CONFORTO TÉRMICO</div>
+                <div style="font-size: 11px; color: #64748b;">Relatório Técnico Operacional de Materiais & Almoxarifado</div>
+            </div>
+        </div>
+        <div style="text-align: right; font-size: 11px; color: #475569;">
+            <div><strong>Emissão:</strong> <span id="print-data-emissao"></span></div>
+            <div><strong>Responsável:</strong> Sandro Ricardo</div>
+        </div>
     </div>
 
     <header>
@@ -221,6 +329,19 @@
 
         <!-- ABA 2: RELATÓRIOS OPERACIONAIS (PEÇAS E FLUXO) -->
         <div id="pane-relatorios" class="tab-pane" style="display: none;">
+            
+            <!-- Barra de Ferramentas de Impressão e PDF -->
+            <div class="section-card no-print btn-toolbar" style="display: flex; justify-content: space-between; align-items: center; background: #e8f5e9; border: 1px solid #c3e6cb;">
+                <div>
+                    <strong style="color: #0f5132;">Exportação do Relatório Operacional</strong>
+                    <div style="font-size: 11px; color: #475569;">Gere o documento oficial A4 para impressão ou download em PDF</div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-blue" onclick="visualizarRelatorioModal()">👁️ Visualizar Relatório</button>
+                    <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ Salvar em PDF / Imprimir</button>
+                </div>
+            </div>
+
             <!-- Peças Abaixo do Mínimo -->
             <div class="section-card" style="border-left: 4px solid var(--danger);">
                 <h3 style="color: var(--danger); margin-bottom: 12px;">⚠️ Peças Abaixo do Estoque Mínimo (Reposição Urgente)</h3>
@@ -257,6 +378,22 @@
                     </thead>
                     <tbody id="lista-historico-movimentacoes"></tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE VISUALIZAÇÃO A4 -->
+    <div id="modal-preview" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Visualização do Relatório (Formato A4)</h3>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ Salvar PDF / Imprimir</button>
+                    <button class="btn-add" style="background: #64748b;" onclick="fecharModalPreview()">Fechar</button>
+                </div>
+            </div>
+            <div id="modal-body-content">
+                <!-- Conteúdo clonado dinamicamente -->
             </div>
         </div>
     </div>
@@ -415,6 +552,43 @@
                 btnRel.classList.add('active');
                 atualizarRelatorioPecas();
             }
+        }
+
+        function visualizarRelatorioModal() {
+            atualizarRelatorioPecas();
+            const modal = document.getElementById('modal-preview');
+            const body = document.getElementById('modal-body-content');
+            
+            const agora = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+            
+            body.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0F5132; padding-bottom:8px; margin-bottom:16px;">
+                    <img src="logo-oficial.jpg" style="height:42px;">
+                    <div style="text-align:right; font-size:11px;">
+                        <div><strong>ARPOL CONFORTO TÉRMICO</strong></div>
+                        <div>Emissão: ${agora}</div>
+                    </div>
+                </div>
+                ${document.getElementById('pane-relatorios').innerHTML}
+            `;
+            // Remove a barra de botões duplicada da visualização
+            const tb = body.querySelector('.btn-toolbar');
+            if (tb) tb.remove();
+            
+            modal.style.display = 'flex';
+        }
+
+        function fecharModalPreview() {
+            document.getElementById('modal-preview').style.display = 'none';
+        }
+
+        function gerarPdfRelatorio() {
+            const elData = document.getElementById('print-data-emissao');
+            if (elData) {
+                elData.innerText = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+            }
+            fecharModalPreview();
+            window.print();
         }
 
         renderizarTabela();
