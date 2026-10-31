@@ -8,76 +8,111 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: #f1f5f9; color: #1e293b; padding-bottom: 60px; }
-        header { background-color: #1e3a8a; color: white; padding: 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Topo Azul com Logo Oficial */
+        header { 
+            background-color: #103b7b; 
+            color: white; 
+            padding: 10px 16px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .header-content {
+            width: 100%;
+            max-width: 520px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         .brand { display: flex; align-items: center; gap: 10px; }
-        .brand-badge { background: #172554; border: 1px solid #3b82f6; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-        .brand-title { font-size: 16px; font-weight: 700; line-height: 1.1; }
-        .brand-sub { font-size: 11px; color: #93c5fd; }
+        .brand-logo-img {
+            height: 38px;
+            width: auto;
+            background: #ffffff;
+            padding: 3px 6px;
+            border-radius: 4px;
+            object-fit: contain;
+            display: block;
+        }
+        .brand-title { font-size: 14px; font-weight: 800; line-height: 1.1; text-transform: uppercase; }
+        .brand-sub { font-size: 10px; color: #93c5fd; }
         
-        .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+        /* Container Centralizado para PC e Celular */
+        .container { 
+            width: 100%; 
+            max-width: 520px; 
+            margin: 0 auto; 
+            padding: 12px; 
+        }
         
-        .nav-tabs { display: flex; gap: 8px; margin-bottom: 16px; background: white; padding: 6px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .nav-btn { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; background: transparent; color: #64748b; }
+        .nav-tabs { display: flex; gap: 6px; margin-bottom: 14px; background: white; padding: 6px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .nav-btn { flex: 1; padding: 10px 4px; border: none; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; background: transparent; color: #64748b; line-height: 1.2; text-align: center; }
         .nav-btn.active { background: #1e3a8a; color: white; }
         
-        .card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .card-title { font-size: 14px; font-weight: 700; color: #1e3a8a; text-transform: uppercase; margin-bottom: 12px; border-bottom: 2px solid #d97706; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .card { background: white; border-radius: 8px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .card-title { font-size: 13px; font-weight: 700; color: #1e3a8a; text-transform: uppercase; margin-bottom: 12px; border-bottom: 2px solid #d97706; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
         
-        .form-group { margin-bottom: 12px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; background: #f8fafc; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase; }
+        .form-control { width: 100%; padding: 9px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #f8fafc; }
         .form-control:focus { outline: none; border-color: #1e3a8a; background: white; }
-        .row { display: flex; gap: 10px; }
+        .row { display: flex; gap: 8px; }
         .col { flex: 1; }
         
-        .btn-gold { background: #d97706; color: white; border: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; }
+        .btn-gold { background: #d97706; color: white; border: none; padding: 11px; border-radius: 6px; font-weight: 800; font-size: 12px; cursor: pointer; text-transform: uppercase; text-align: center; }
         .btn-gold:hover { background: #b45309; }
-        .btn-blue { background: #2563eb; color: white; border: none; padding: 10px 14px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; }
+        .btn-blue { background: #2563eb; color: white; border: none; padding: 11px; border-radius: 6px; font-weight: 800; font-size: 12px; cursor: pointer; text-transform: uppercase; text-align: center; }
         .btn-blue:hover { background: #1d4ed8; }
-        .btn-green { background: #059669; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; text-transform: uppercase; width: 100%; }
+        .btn-green { background: #059669; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; text-transform: uppercase; width: 100%; }
         .btn-green:hover { background: #047857; }
         
-        .photo-card { border: 2px dashed #93c5fd; background: #eff6ff; border-radius: 8px; padding: 12px; margin-bottom: 12px; position: relative; }
+        .photo-card { border: 2px dashed #93c5fd; background: #eff6ff; border-radius: 8px; padding: 10px; margin-bottom: 10px; position: relative; }
         .photo-picker { height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: white; border-radius: 6px; border: 1px solid #bfdbfe; margin-bottom: 8px; position: relative; overflow: hidden; }
         .photo-picker img { width: 100%; height: 100%; object-fit: contain; }
         .photo-badge { position: absolute; top: 6px; left: 6px; background: #1e3a8a; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-        .btn-del { color: #dc2626; font-size: 12px; font-weight: bold; background: none; border: none; cursor: pointer; float: right; margin-top: 4px; }
+        .btn-del { color: #dc2626; font-size: 11px; font-weight: bold; background: none; border: none; cursor: pointer; float: right; margin-top: 4px; }
         
-        /* Lista de Salvos */
-        .history-item { border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-        .history-info h4 { font-size: 14px; color: #1e3a8a; }
-        .history-info p { font-size: 12px; color: #64748b; }
+        .history-item { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
+        .history-info h4 { font-size: 13px; color: #1e3a8a; }
+        .history-info p { font-size: 11px; color: #64748b; }
         .history-actions { display: flex; gap: 6px; }
-        .btn-sm { padding: 6px 10px; font-size: 12px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-sm { padding: 6px 8px; font-size: 11px; border-radius: 4px; border: none; font-weight: bold; cursor: pointer; }
         
-        /* Modal de Login Supabase */
-        .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(30, 58, 138, 0.96); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        /* Modal de Login */
+        .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(16, 59, 123, 0.96); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; }
         .auth-box { background: white; width: 100%; max-width: 380px; padding: 24px 20px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); text-align: center; }
         
-        /* Impressão / PDF A4 */
+        /* Impressão / Folha A4 */
+        .a4-page { width: 100%; max-width: 210mm; background: white; margin: 0 auto; padding: 12mm; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .grid-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .preview-item { border: 1px solid #e2e8f0; padding: 6px; border-radius: 4px; background: white; }
+        .preview-item img { width: 100%; height: 160px; object-fit: contain; background: #f8fafc; border-radius: 4px; margin-bottom: 4px; }
+
         @media print {
             body { background: white; padding: 0; }
             header, .nav-tabs, #view-form, #view-history, .no-print, .auth-overlay { display: none !important; }
+            .container { max-width: 100% !important; padding: 0 !important; }
             #view-preview { display: block !important; }
             .a4-page { box-shadow: none !important; margin: 0 !important; width: 100% !important; padding: 10mm !important; }
-            .grid-print { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-            .print-item { page-break-inside: avoid; break-inside: avoid; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; }
-            .print-item img { max-height: 190px; width: 100%; object-fit: contain; }
+            .grid-print { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            .print-item { page-break-inside: avoid; break-inside: avoid; border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px; }
+            .print-item img { max-height: 180px; width: 100%; object-fit: contain; }
         }
-        
-        .a4-page { width: 100%; max-width: 210mm; background: white; margin: 0 auto; padding: 15mm; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .grid-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .preview-item { border: 1px solid #e2e8f0; padding: 8px; border-radius: 4px; background: white; }
-        .preview-item img { width: 100%; height: 180px; object-fit: contain; background: #f8fafc; border-radius: 4px; margin-bottom: 6px; }
     </style>
 </head>
 <body>
 
-    <!-- Bloqueio de Login Supabase -->
+    <!-- Login -->
     <div id="auth-gate" class="auth-overlay">
         <div class="auth-box">
-            <div style="font-weight: 800; font-size: 20px; color: #1e3a8a; margin-bottom: 4px;">ARPOL</div>
-            <div style="font-size: 11px; font-weight: 700; color: #d97706; margin-bottom: 18px; text-transform: uppercase;">Acesso do Técnico</div>
+            <img src="logo-oficial.jpg" alt="ARPOL" style="max-height: 50px; margin-bottom: 12px; display: block; margin-left: auto; margin-right: auto;" onerror="this.src='https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png'">
+            <div style="font-size: 12px; font-weight: 800; color: #1e3a8a; margin-bottom: 16px; text-transform: uppercase;">Acesso do Técnico</div>
             <form id="form-auth">
                 <div class="form-group" style="text-align: left;">
                     <label>E-mail</label>
@@ -93,17 +128,19 @@
         </div>
     </div>
 
-    <!-- Cabeçalho Original -->
+    <!-- Barra Azul Superior com Logo Oficial Embutida -->
     <header>
-        <div class="brand">
-            <div class="brand-badge">ARPOL</div>
-            <div>
-                <div class="brand-title">CONFORTO TÉRMICO</div>
-                <div class="brand-sub">Sistema Online / Cloud</div>
+        <div class="header-content">
+            <div class="brand">
+                <img src="logo-oficial.jpg" class="brand-logo-img" alt="ARPOL" onerror="this.src='https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png'">
+                <div>
+                    <div class="brand-title">CONFORTO TÉRMICO</div>
+                    <div class="brand-sub">Sistema Online / Cloud</div>
+                </div>
             </div>
-        </div>
-        <div>
-            <button class="btn-gold" onclick="abrirAba('preview')" style="font-size: 12px; padding: 6px 10px;">Visualizar / Gerar PDF</button>
+            <div>
+                <button class="btn-gold" onclick="abrirAba('preview')" style="font-size: 11px; padding: 6px 10px;">Visualizar / Gerar PDF</button>
+            </div>
         </div>
     </header>
 
@@ -121,12 +158,6 @@
                 <div class="card-title">
                     <span>Identificação</span>
                     <button class="btn-blue" onclick="novoAtendimento()" style="font-size: 11px; padding: 4px 8px;">+ Limpar / Novo</button>
-                </div>
-                
-                <div class="form-group">
-                    <label>Logo Oficial da Empresa</label>
-                    <input type="file" id="logoInput" accept="image/*" style="display:none;" onchange="carregarLogo(event)">
-                    <button class="btn-blue" style="width: 100%; background: #3b82f6;" onclick="document.getElementById('logoInput').click()">Selecionar Logo ARPOL (Fica salva no aparelho)</button>
                 </div>
 
                 <div class="form-group">
@@ -172,14 +203,14 @@
                 </div>
             </div>
 
-            <!-- Adicionar Fotos -->
+            <!-- Registro Fotográfico com os Botões Originais -->
             <div class="card">
                 <div class="card-title">
                     <span>Registro Fotográfico</span>
                 </div>
-                <div class="row" style="margin-bottom: 16px;">
-                    <button class="col btn-blue" onclick="adicionarFotoForm('FOTO INDIVIDUAL')">+ Foto Individual</button>
-                    <button class="col btn-gold" onclick="adicionarParForm()">+ Par Antes/Depois</button>
+                <div class="row" style="margin-bottom: 14px;">
+                    <button class="col btn-blue" onclick="adicionarFotoForm('FOTO INDIVIDUAL')">+ FOTO INDIVIDUAL</button>
+                    <button class="col btn-gold" onclick="adicionarParForm()">+ PAR ANTES/DEPOIS</button>
                 </div>
 
                 <div id="container-fotos-form"></div>
@@ -198,23 +229,20 @@
         <div id="view-preview" style="display: none;">
             <div class="card no-print" style="display: flex; gap: 8px; justify-content: space-between;">
                 <button class="btn-blue" onclick="abrirAba('form')">⬅️ Voltar e Editar</button>
-                <button class="btn-green" onclick="imprimirOuPdf()" style="width: auto; padding: 10px 20px;">🖨️ Baixar PDF / Imprimir</button>
+                <button class="btn-green" onclick="imprimirOuPdf()" style="width: auto; padding: 10px 18px;">🖨️ Baixar PDF / Imprimir</button>
             </div>
 
             <div class="a4-page" id="relatorio-imprimir">
-                <!-- Cabeçalho A4 Formatado (Apenas Logo e Título à direita) -->
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #d97706; padding-bottom: 10px; margin-bottom: 14px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <img id="preview-logo" src="" alt="ARPOL" style="height: 55px; max-width: 140px; object-fit: contain; display: none;">
-                        <div id="preview-logo-placeholder" style="font-weight: 800; font-size: 22px; color: #1e3a8a;">ARPOL</div>
+                        <img src="logo-oficial.jpg" alt="ARPOL" style="height: 50px; max-width: 140px; object-fit: contain; display: block;" onerror="this.src='https://raw.githubusercontent.com/sandroarpol/arpol-app/main/logo.png'">
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-weight: 800; font-size: 16px; color: #d97706; text-transform: uppercase;">RELATÓRIO FOTOGRÁFICO</div>
+                        <div style="font-weight: 800; font-size: 15px; color: #d97706; text-transform: uppercase;">RELATÓRIO FOTOGRÁFICO</div>
                     </div>
                 </div>
 
-                <!-- Tabela de Dados -->
-                <div style="margin-bottom: 16px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden;">
+                <div style="margin-bottom: 14px; font-size: 11px; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden;">
                     <div style="display: flex; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
                         <div style="width: 25%; padding: 6px 8px; font-weight: bold; color: #475569;">ID ATENDIMENTO:</div>
                         <div style="width: 75%; padding: 6px 8px; font-weight: bold; color: #1e3a8a;" id="p-id">-</div>
@@ -243,7 +271,6 @@
                     </div>
                 </div>
 
-                <!-- Grade de Fotos Econômica (Texto '4 A 6' removido conforme solicitado) -->
                 <div class="grid-preview grid-print" id="container-fotos-preview"></div>
             </div>
         </div>
@@ -255,7 +282,7 @@
                     <span>Relatórios Gravados neste Dispositivo</span>
                     <button class="btn-blue" onclick="atualizarListaHistorico()" style="font-size: 11px; padding: 4px 8px;">🔄 Atualizar</button>
                 </div>
-                <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 14px;">
                     Estes relatórios estão salvos <b>apenas na memória deste aparelho</b>. Você pode reabrir qualquer um para editar dados, trocar fotos ou gerar novos PDFs a qualquer momento.
                 </p>
                 <div id="lista-historico"></div>
@@ -264,22 +291,14 @@
     </div>
 
     <script>
-        // Supabase Auth
         const SUPABASE_URL = "https://hkxgqsxrpgznlnhvmvaj.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzOTIyNTUsImV4cCI6MjEwODk2ODI1NX0.hHYuiCxqU4KTKoHNlzYD3i1qGt2hPZCJMt2MQvIOHNw";
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let fotos = [];
-        let logoBase64 = localStorage.getItem('arpol_app_logo') || '';
 
         window.onload = function() {
             verificarSessao();
-            if (logoBase64) {
-                const img = document.getElementById('preview-logo');
-                img.src = logoBase64;
-                img.style.display = 'block';
-                document.getElementById('preview-logo-placeholder').style.display = 'none';
-            }
             novoAtendimento();
             atualizarListaHistorico();
         };
@@ -342,23 +361,6 @@
             renderizarFotosForm();
         }
 
-        function carregarLogo(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    logoBase64 = evt.target.result;
-                    localStorage.setItem('arpol_app_logo', logoBase64);
-                    const img = document.getElementById('preview-logo');
-                    img.src = logoBase64;
-                    img.style.display = 'block';
-                    document.getElementById('preview-logo-placeholder').style.display = 'none';
-                    alert('Logo gravada com sucesso na memória deste aparelho!');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
         function adicionarFotoForm(tipo) {
             const id = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
             fotos.push({ id: id, tipo: tipo, dataUrl: '', local: '', desc: '' });
@@ -374,7 +376,7 @@
             const c = document.getElementById('container-fotos-form');
             c.innerHTML = '';
             if (fotos.length === 0) {
-                c.innerHTML = '<div style="text-align:center; padding: 20px; color:#94a3b8; font-size:13px;">Nenhuma foto adicionada ainda. Clique nos botões acima.</div>';
+                c.innerHTML = '<div style="text-align:center; padding: 20px; color:#94a3b8; font-size:12px;">Nenhuma foto adicionada ainda. Clique nos botões acima.</div>';
                 return;
             }
 
@@ -387,7 +389,7 @@
                     </div>
                     <label class="photo-picker" for="file_input_${item.id}">
                         <div class="photo-badge">${item.tipo}</div>
-                        ${item.dataUrl ? `<img src="${item.dataUrl}">` : `<div style="text-align:center; color:#3b82f6; font-size:13px; font-weight:600;"><span style="font-size:32px;">📷</span><br>TOCAR PARA TIRAR OU ESCOLHER FOTO</div>`}
+                        ${item.dataUrl ? `<img src="${item.dataUrl}">` : `<div style="text-align:center; color:#3b82f6; font-size:12px; font-weight:600;"><span style="font-size:28px;">📷</span><br>TOCAR PARA TIRAR OU ESCOLHER FOTO</div>`}
                     </label>
                     <input type="file" id="file_input_${item.id}" accept="image/*" style="display:none;" onchange="capturarFoto(event, ${index})">
                     <div class="form-group" style="margin-bottom:6px;">
