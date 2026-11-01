@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ARPOL - Sistema de Gestão e Almoxarifado</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #0F5132;
@@ -58,7 +59,7 @@
             gap: 8px;
         }
         .logo-img {
-            height: 36px;
+            height: 38px;
             width: auto;
             object-fit: contain;
             background: #ffffff;
@@ -216,6 +217,7 @@
         }
         .btn-action.out { background: #495057; }
 
+        /* MODAIS */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -261,6 +263,7 @@
         .form-row { display: flex; gap: 8px; }
         .form-col { flex: 1; }
 
+        /* REGRAS DE IMPRESSÃO / SALVAR EM PDF */
         @media print {
             body { background: white !important; padding: 0 !important; color: black !important; }
             .status-bar, header, .main-nav, #pane-estoque, .btn-toolbar, .no-print, .modal-overlay { display: none !important; }
@@ -278,10 +281,11 @@
 <body>
 
     <div class="status-bar">
-        <span>✅ <strong>Acesso Direto ARPOL:</strong> Sandro Ricardo</span>
+        <span>✅ <strong>Acesso Direto ARPOL:</strong> Sandro Ricardo (Administrador)</span>
         <span id="sync-status">🟢 Almoxarifado Operacional</span>
     </div>
 
+    <!-- CABEÇALHO OFICIAL EXCLUSIVO PARA O PDF -->
     <div class="print-only-header">
         <div style="display: flex; align-items: center; gap: 10px;">
             <img src="logo-oficial.jpg" alt="ARPOL" style="height: 48px; width: auto; object-fit: contain;">
@@ -316,7 +320,7 @@
         <div id="pane-estoque" class="tab-pane">
             <div class="section-card">
                 <div class="card-header">
-                    <h2>Movimentação de Peças</h2>
+                    <h2>Movimentação de Peças & Almoxarifado</h2>
                     <button class="btn-add" onclick="abrirModalCadastro()">+ Novo Item</button>
                 </div>
                 <div class="table-responsive">
@@ -328,7 +332,7 @@
                                 <th>Quantidade</th>
                                 <th>Unidade</th>
                                 <th>Estado</th>
-                                <th>Ações</th>
+                                <th>Ações de Entrada / Saída</th>
                             </tr>
                         </thead>
                         <tbody id="tabela-corpo"></tbody>
@@ -337,12 +341,12 @@
             </div>
         </div>
 
-        <!-- ABA 2: RELATÓRIOS OPERACIONAIS -->
+        <!-- ABA 2: RELATÓRIOS OPERACIONAIS (PEÇAS, MÍNIMOS E ENTRADA/SAÍDA) -->
         <div id="pane-relatorios" class="tab-pane" style="display: none;">
             <div class="section-card no-print btn-toolbar" style="display: flex; justify-content: space-between; align-items: center; background: #e8f5e9; border: 1px solid #c3e6cb; flex-wrap: wrap; gap: 8px;">
                 <div>
-                    <strong style="color: #0f5132;">Exportação do Relatório Operacional</strong>
-                    <div style="font-size: 11px; color: #475569;">Formato A4 oficial para envio ao cliente/hospital</div>
+                    <strong style="color: #0f5132;">Exportação do Relatório Operacional de Peças</strong>
+                    <div style="font-size: 11px; color: #475569;">Documento em formato A4 para envio ao hospital/cliente</div>
                 </div>
                 <div style="display: flex; gap: 6px; align-items: center;">
                     <button class="btn-blue" onclick="visualizarRelatorioModal()">👁️ Ver Relatório</button>
@@ -360,7 +364,7 @@
                                 <th>Código</th>
                                 <th>Descrição da Peça</th>
                                 <th style="text-align: center;">Atual</th>
-                                <th style="text-align: center;">Mínimo</th>
+                                <th style="text-align: center;">Estoque Mínimo</th>
                                 <th style="text-align: center;">Situação</th>
                             </tr>
                         </thead>
@@ -372,7 +376,7 @@
             <!-- Histórico de Entradas e Saídas -->
             <div class="section-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="color: var(--primary); font-size: 14px;">📋 Histórico de Movimentações (Entradas e Saídas)</h3>
+                    <h3 style="color: var(--primary); font-size: 14px;">📋 Histórico de Movimentações de Peças (Entradas e Saídas)</h3>
                     <button class="btn-del-item no-print" onclick="limparTodoHistorico()" style="font-size: 11px;">🗑️ Limpar Todos os Testes</button>
                 </div>
                 <div class="table-responsive">
@@ -383,7 +387,7 @@
                                 <th>Tipo</th>
                                 <th>Código</th>
                                 <th>Descrição</th>
-                                <th style="text-align: center;">Qtd</th>
+                                <th style="text-align: center;">Quantidade</th>
                                 <th>Responsável</th>
                                 <th class="th-excluir" style="text-align: center; width: 60px;">Ação</th>
                             </tr>
@@ -395,7 +399,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CADASTRO -->
+    <!-- MODAL DE CADASTRO COMPLETO DE PEÇA -->
     <div id="modal-cadastro" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-title">Cadastrar Novo Item no Estoque</div>
@@ -406,7 +410,7 @@
                 </div>
                 <div class="form-group">
                     <label>Descrição do Material</label>
-                    <input type="text" id="cad-desc" class="form-control" placeholder="Ex: Tubo de Cobre 3/8..." required>
+                    <input type="text" id="cad-desc" class="form-control" placeholder="Ex: Gás Refrigerante R410A..." required>
                 </div>
                 <div class="form-row">
                     <div class="form-col form-group">
@@ -430,7 +434,7 @@
     <div id="modal-preview" class="modal-overlay">
         <div class="modal-card" style="max-width: 820px; max-height: 85vh; overflow-y: auto;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-                <h3 style="font-size: 14px;">Pré-visualização do Relatório Oficial</h3>
+                <h3 style="font-size: 14px;">Pré-visualização do Relatório Oficial (Hospital / Cliente)</h3>
                 <div style="display: flex; gap: 6px;">
                     <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ Salvar em PDF</button>
                     <button class="btn-add" style="background: #64748b;" onclick="fecharModalPreview()">Fechar</button>
@@ -467,13 +471,13 @@
         }
 
         function excluirItemHistorico(index) {
-            if (!confirm("Remover este registo de teste do relatório?")) return;
+            if (!confirm("Remover este registro de teste do relatório?")) return;
             historico.splice(index, 1);
             salvarLocalmente();
         }
 
         function limparTodoHistorico() {
-            if (!confirm("Limpar todo o histórico de testes? O estoque atual continuará inalterado.")) return;
+            if (!confirm("Limpar todo o histórico de testes? O saldo atual das peças permanecerá o mesmo.")) return;
             historico = [];
             salvarLocalmente();
         }
@@ -538,8 +542,8 @@
                     <td>${item.un || 'UN'}</td>
                     <td><span class="badge-status ${badgeClass}">${statusTexto}</span></td>
                     <td>
-                        <button class="btn-action" onclick="alterarQuantidade(${index}, 1)">+1</button>
-                        <button class="btn-action out" onclick="alterarQuantidade(${index}, -1)">-1</button>
+                        <button class="btn-action" onclick="alterarQuantidade(${index}, 1)">+1 Entrada</button>
+                        <button class="btn-action out" onclick="alterarQuantidade(${index}, -1)">-1 Saída</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -553,13 +557,13 @@
 
             const criticos = estoque.filter(item => Number(item.qtd) <= 3);
             if (criticos.length === 0) {
-                tabelaCriticos.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 12px; color: #198754; font-weight: 600;">✅ Nenhuma peça abaixo do estoque mínimo.</td></tr>';
+                tabelaCriticos.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 12px; color: #198754; font-weight: 600;">✅ Nenhuma peça abaixo do estoque mínimo. Níveis operacionais regulares.</td></tr>';
             } else {
                 tabelaCriticos.innerHTML = criticos.map(item => `
                     <tr>
                         <td><strong>${item.cod}</strong></td>
                         <td>${item.desc}</td>
-                        <td style="text-align: center; color: var(--danger); font-weight: bold;">${item.qtd} ${item.un || 'UN'}</td>
+                        <td style="text-align: center; color: var(--danger); font-weight: bold;">${item.qtd}${item.un || 'UN'}</td>
                         <td style="text-align: center;">3 ${item.un || 'UN'}</td>
                         <td style="text-align: center;">
                             <span class="badge-status ${item.qtd == 0 ? 'badge-esgotado' : 'badge-baixo'}">
@@ -571,64 +575,10 @@
             }
 
             if (historico.length === 0) {
-                tabelaMovimentos.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 12px; color: #6c757d;">Nenhuma movimentação registada.</td></tr>';
+                tabelaMovimentos.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 12px; color: #6c757d;">Nenhuma movimentação registrada recentemente.</td></tr>';
             } else {
                 tabelaMovimentos.innerHTML = historico.map((m, idx) => `
                     <tr>
                         <td style="color: #6c757d; font-size: 11px;">${m.dataHora}</td>
                         <td>
-                            <span class="badge-status ${String(m.tipo).includes('ENTRADA') ? 'badge-estoque' : 'badge-esgotado'}">
-                                ${m.tipo}
-                            </span>
-                        </td>
-                        <td><strong>${m.cod}</strong></td>
-                        <td>${m.desc}</td>
-                        <td style="text-align: center; font-weight: bold;">${m.qtd}</td>
-                        <td style="font-size: 11px;">${m.usuario}</td>
-                        <td class="col-excluir" style="text-align: center;">
-                            <button class="btn-del-item" onclick="excluirItemHistorico(${idx})" title="Remover registo">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-        }
-
-        function alternarAba(aba) {
-            const paneEstoque = document.getElementById('pane-estoque');
-            const paneRel = document.getElementById('pane-relatorios');
-            const btnEstoque = document.getElementById('tab-btn-estoque');
-            const btnRel = document.getElementById('tab-btn-relatorios');
-
-            if (aba === 'estoque') {
-                paneEstoque.style.display = 'block';
-                paneRel.style.display = 'none';
-                btnEstoque.classList.add('active');
-                btnRel.classList.remove('active');
-            } else {
-                paneEstoque.style.display = 'none';
-                paneRel.style.display = 'block';
-                btnEstoque.classList.remove('active');
-                btnRel.classList.add('active');
-                atualizarRelatorioPecas();
-            }
-        }
-
-        function visualizarRelatorioModal() {
-            atualizarRelatorioPecas();
-            const modal = document.getElementById('modal-preview');
-            const body = document.getElementById('modal-body-content');
-            const agora = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
-            
-            body.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0F5132; padding-bottom:8px; margin-bottom:14px;">
-                    <img src="logo-oficial.jpg" style="height:38px;">
-                    <div style="text-align:right; font-size:11px;">
-                        <div><strong>ARPOL CONFORTO TÉRMICO</strong></div>
-                        <div>Emissão: ${agora}</div>
-                    </div>
-                </div>
-                ${document.getElementById('pane-relatorios').innerHTML}
-            `;
-            const tb = body.querySelector('.btn-toolbar');
-            if (tb) tb.remove();
-            body.querySelectorAll('.col-
+                            <span class
