@@ -269,7 +269,6 @@
         @media print {
             body { background: white !important; padding: 0 !important; color: black !important; }
             .status-bar, header, .main-nav, #pane-estoque, .btn-toolbar, .no-print, .modal-overlay { display: none !important; }
-            /* Oculta os botões e coluna de exclusão no PDF */
             .col-excluir, .btn-del-item, .th-excluir { display: none !important; }
             .content-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             #pane-relatorios { display: block !important; }
@@ -516,7 +515,6 @@
             } catch(e) { console.warn(e); }
         }
 
-        // Função para excluir uma linha de teste individual
         async function excluirItemHistorico(index) {
             if (!confirm("Deseja realmente remover esta movimentação de teste do relatório?")) return;
             
@@ -532,7 +530,6 @@
             } catch (e) { console.warn(e); }
         }
 
-        // Função para limpar todos os testes de uma vez só
         async function limparTodoHistorico() {
             if (!confirm("Tem certeza que deseja apagar todo o histórico de testes? O estoque de peças permanecerá intacto.")) return;
             
@@ -557,7 +554,8 @@
             localStorage.setItem('arpol_estoque_db', JSON.stringify(estoque));
 
             try {
-                await supabaseClient.from('estoque').upsert([item], { onConflict: 'cod' });
+                // Correção vital: Usa o comando update direto para ignorar restrições de chave única
+                await supabaseClient.from('estoque').update({ qtd: item.qtd }).eq('cod', item.cod);
             } catch(e) { console.warn(e); }
         }
 
@@ -590,7 +588,13 @@
             fecharModalCadastro();
 
             try {
-                await supabaseClient.from('estoque').upsert([novo], { onConflict: 'cod' });
+                // Correção vital: Procura se a peça já existe para atualizar, senão insere nova
+                const { data: check } = await supabaseClient.from('estoque').select('cod').eq('cod', novo.cod);
+                if (check && check.length > 0) {
+                    await supabaseClient.from('estoque').update({ qtd: novo.qtd, desc: novo.desc, un: novo.un }).eq('cod', novo.cod);
+                } else {
+                    await supabaseClient.from('estoque').insert([novo]);
+                }
             } catch(e) { console.warn(e); }
         }
 
@@ -710,7 +714,6 @@
                 </div>
                 ${document.getElementById('pane-relatorios').innerHTML}
             `;
-            // Remove botões internos e coluna de lixeira na visualização de impressão
             const tb = body.querySelector('.btn-toolbar');
             if (tb) tb.remove();
             body.querySelectorAll('.col-excluir, .th-excluir, .btn-del-item').forEach(el => el.remove());
@@ -733,9 +736,13 @@
 
         carregarDadosSupabase();
 
+        // Ouve atualizações de ambas as tabelas em tempo real!
         supabaseClient
-            .channel('mudancas-estoque')
+            .channel('mudancas-banco')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, () => {
+                carregarDadosSupabase();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'historico_movimentacoes' }, () => {
                 carregarDadosSupabase();
             })
             .subscribe();
