@@ -4,49 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ARPOL - App</title>
-    <!-- CSS Super Leve e Limpo -->
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
         body { background-color: #f8f9fa; color: #333; }
         
-        /* Cabeçalho */
         header { background: #0F5132; color: white; padding: 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .logo-area { display: flex; align-items: center; gap: 10px; }
         .logo-area h1 { font-size: 18px; margin: 0; }
         #status-conexao { font-size: 12px; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 12px; }
 
-        /* Abas de Navegação */
         .tabs { display: flex; background: white; border-bottom: 1px solid #ddd; }
         .tab { flex: 1; text-align: center; padding: 12px; font-weight: bold; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
         .tab.active { color: #0F5132; border-bottom: 3px solid #0F5132; }
 
-        /* Conteúdo Principal */
         .container { padding: 16px; max-width: 800px; margin: 0 auto; padding-bottom: 80px; }
         .page { display: none; }
         .page.active { display: block; }
 
-        /* Cartões de Peças */
         .card { background: white; border-radius: 8px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .card-info h3 { font-size: 16px; color: #111; margin-bottom: 4px; }
         .card-info p { font-size: 13px; color: #666; }
         .card-actions { display: flex; align-items: center; gap: 12px; }
         .qtd-display { font-size: 20px; font-weight: bold; color: #0F5132; min-width: 40px; text-align: center; }
         
-        /* Botões */
         button { border: none; cursor: pointer; border-radius: 6px; font-weight: bold; transition: 0.2s; }
         .btn-redondo { width: 36px; height: 36px; font-size: 18px; background: #e9ecef; color: #333; display: flex; align-items: center; justify-content: center; }
         .btn-redondo:active { background: #d3d9df; }
         
         .btn-flutuante { position: fixed; bottom: 20px; right: 20px; background: #0F5132; color: white; border-radius: 50px; padding: 14px 20px; box-shadow: 0 4px 10px rgba(15,81,50,0.3); font-size: 14px; z-index: 90; }
         
-        /* Tabela Histórico */
         .historico-item { padding: 12px; border-bottom: 1px solid #eee; background: white; margin-bottom: 8px; border-radius: 6px; }
         .hist-top { display: flex; justify-content: space-between; font-size: 11px; color: #888; margin-bottom: 4px; }
         .hist-main { display: flex; justify-content: space-between; font-size: 14px; }
         .badge-in { color: #0F5132; font-weight: bold; }
         .badge-out { color: #dc3545; font-weight: bold; }
 
-        /* Modal Novo Item */
         #modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
         .modal-content { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; }
         .modal-content input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
@@ -71,7 +63,6 @@
     </div>
 
     <div class="container">
-        <!-- PÁGINA: ESTOQUE -->
         <div id="page-estoque" class="page active">
             <div id="lista-estoque">
                 <p style="text-align: center; color: #888; margin-top: 20px;">Carregando peças...</p>
@@ -79,7 +70,6 @@
             <button class="btn-flutuante" onclick="abrirModal()">+ Nova Peça</button>
         </div>
 
-        <!-- PÁGINA: HISTÓRICO -->
         <div id="page-historico" class="page">
             <div id="lista-historico">
                 <p style="text-align: center; color: #888; margin-top: 20px;">Carregando histórico...</p>
@@ -87,7 +77,6 @@
         </div>
     </div>
 
-    <!-- MODAL -->
     <div id="modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 15px; color: #0F5132;">Cadastrar Nova Peça</h3>
@@ -104,29 +93,25 @@
         </div>
     </div>
 
-    <!-- SCRIPT SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // CONFIGURAÇÃO
+        // CONFIGURAÇÃO - Nome alterado para evitar conflito
         const supabaseUrl = 'https://hkxgqsxrpgznlnhvmvaj.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzOTIyNTUsImV4cCI6MjEwODk2ODI1NX0.hHYuiCxqU4KTKoHNlzYD3i1qGt2hPZCJMt2MQvIOHNw';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const clienteSupabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         let estoqueData = [];
         let historicoData = [];
 
-        // 1. CARREGAR DADOS
         async function carregarDados() {
             try {
                 document.getElementById('status-conexao').innerText = "🔄 Atualizando...";
                 document.getElementById('status-conexao').style.background = "rgba(255,255,255,0.2)";
 
-                // Busca Estoque
-                const { data: est } = await supabase.from('estoque').select('*').order('cod');
+                const { data: est } = await clienteSupabase.from('estoque').select('*').order('cod');
                 if (est) estoqueData = est;
 
-                // Busca Histórico
-                const { data: hist } = await supabase.from('historico_movimentacoes').select('*').order('id', { ascending: false }).limit(40);
+                const { data: hist } = await clienteSupabase.from('historico_movimentacoes').select('*').order('id', { ascending: false }).limit(40);
                 if (hist) historicoData = hist;
 
                 desenharTelas();
@@ -139,9 +124,7 @@
             }
         }
 
-        // 2. DESENHAR INTERFACE
         function desenharTelas() {
-            // Desenhar Estoque
             const divEstoque = document.getElementById('lista-estoque');
             if(estoqueData.length === 0) {
                 divEstoque.innerHTML = '<p style="text-align:center; color:#888;">Nenhuma peça no estoque.</p>';
@@ -150,107 +133,9 @@
                     <div class="card">
                         <div class="card-info">
                             <h3>${item.cod}</h3>
-                            <p>${item.desc} | ${item.un}</p>
+                            <p>${item.desc} \vert{}${item.un}</p>
                         </div>
                         <div class="card-actions">
                             <button class="btn-redondo" onclick="alterarQtd(${index}, -1)">-</button>
                             <div class="qtd-display">${item.qtd}</div>
                             <button class="btn-redondo" onclick="alterarQtd(${index}, 1)">+</button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            // Desenhar Histórico
-            const divHistorico = document.getElementById('lista-historico');
-            if(historicoData.length === 0) {
-                divHistorico.innerHTML = '<p style="text-align:center; color:#888;">Nenhum histórico recente.</p>';
-            } else {
-                divHistorico.innerHTML = historicoData.map(item => `
-                    <div class="historico-item">
-                        <div class="hist-top">
-                            <span>${item.dataHora}</span>
-                            <span>Sandro Ricardo</span>
-                        </div>
-                        <div class="hist-main">
-                            <span><strong>${item.cod}</strong> (${item.desc})</span>
-                            <span class="${item.tipo.includes('ENTRADA') ? 'badge-in' : 'badge-out'}">
-                                ${item.tipo.includes('ENTRADA') ? '+' : '-'}${item.qtd}
-                            </span>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        }
-
-        // 3. ALTERAR QUANTIDADE NO BANCO
-        async function alterarQtd(index, valor) {
-            const peca = estoqueData[index];
-            if (valor < 0 && peca.qtd <= 0) return; // Não deixa ficar negativo
-
-            // Atualiza tela instantaneamente (UX)
-            peca.qtd += valor;
-            desenharTelas();
-
-            // Grava Histórico
-            const tipo = valor > 0 ? 'ENTRADA' : 'SAÍDA';
-            const dataHora = new Date().toLocaleString('pt-BR');
-            await supabase.from('historico_movimentacoes').insert([{
-                dataHora, tipo, cod: peca.cod, desc: peca.desc, qtd: Math.abs(valor), usuario: 'Sandro Ricardo'
-            }]);
-
-            // Grava Estoque
-            await supabase.from('estoque').upsert([{
-                cod: peca.cod, desc: peca.desc, qtd: peca.qtd, un: peca.un
-            }], { onConflict: 'cod' });
-        }
-
-        // 4. CADASTRAR NOVA PEÇA
-        async function salvarNovaPeca() {
-            const cod = document.getElementById('novo-cod').value.trim().toUpperCase();
-            const desc = document.getElementById('novo-desc').value.trim();
-            const qtd = parseInt(document.getElementById('novo-qtd').value) || 0;
-            const un = document.getElementById('novo-un').value.trim().toUpperCase();
-
-            if(!cod || !desc) { alert("Preencha Código e Descrição!"); return; }
-
-            fecharModal();
-            document.getElementById('status-conexao').innerText = "🔄 Gravando...";
-
-            // Salva no banco
-            await supabase.from('estoque').upsert([{ cod, desc, qtd, un }], { onConflict: 'cod' });
-            await supabase.from('historico_movimentacoes').insert([{
-                dataHora: new Date().toLocaleString('pt-BR'), tipo: 'ENTRADA (NOVO)', cod, desc, qtd, usuario: 'Sandro Ricardo'
-            }]);
-
-            // Limpa formulário e recarrega
-            document.getElementById('novo-cod').value = '';
-            document.getElementById('novo-desc').value = '';
-            document.getElementById('novo-qtd').value = '1';
-            carregarDados();
-        }
-
-        // 5. NAVEGAÇÃO E MODAIS
-        function mudarAba(aba, elemento) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(`page-${aba}`).classList.add('active');
-            elemento.classList.add('active');
-        }
-
-        function abrirModal() { document.getElementById('modal').style.display = 'flex'; }
-        function fecharModal() { document.getElementById('modal').style.display = 'none'; }
-
-        // 6. ATUALIZAÇÃO EM TEMPO REAL (REALTIME)
-        supabase.channel('public:estoque')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, payload => {
-                carregarDados(); // Recarrega se alguém mexer no outro celular
-            })
-            .subscribe();
-
-        // INICIAR O APLICATIVO
-        carregarDados();
-
-    </script>
-</body>
-</html>
