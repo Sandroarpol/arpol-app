@@ -3,244 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ARPOL - Sistema de Gestão</title>
+    <title>ARPOL - Sistema de Gestão e Almoxarifado</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #0F5132; --bg: #f4f6f8; --card-bg: #fff; --text: #212529; --danger: #dc3545; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-        body { background: var(--bg); color: var(--text); padding-bottom: 60px; }
-        .status-bar { background: #d1e7dd; color: #0f5132; padding: 6px 12px; font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; }
-        header { background: var(--card-bg); padding: 10px 14px; display: flex; align-items: center; border-bottom: 1px solid #dee2e6; position: sticky; top: 0; z-index: 10; }
-        .logo-img { height: 36px; margin-right: 8px; }
-        .content-container { max-width: 1100px; margin: 14px auto; padding: 0 12px; }
-        .main-nav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid #dee2e6; }
-        .nav-tab { padding: 8px 12px; font-size: 13px; font-weight: 600; color: #6c757d; cursor: pointer; }
-        .nav-tab.active { color: var(--primary); border-bottom: 2px solid var(--primary); margin-bottom: -2px; }
-        .section-card { background: var(--card-bg); border-radius: 8px; border: 1px solid #dee2e6; padding: 16px; margin-bottom: 14px; }
-        .btn-add { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .btn-action { background: #0f5132; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-right: 4px; }
-        .btn-action.out { background: #495057; }
-        .btn-del { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
-        .table-responsive { overflow-x: auto; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #f1f3f5; }
-        th { background: #f8f9fa; color: #6c757d; }
-        .badge { padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-        .badge-ok { background: #d1e7dd; color: #0f5132; }
-        .badge-alert { background: #f8d7da; color: #842029; }
-        
-        /* Modal */
-        .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; }
-        .modal-card { background: white; padding: 20px; border-radius: 8px; width: 100%; max-width: 400px; }
-        .form-group { margin-bottom: 12px; }
-        .form-control { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-    </style>
-</head>
-<body>
-
-    <div class="status-bar">
-        <span>✅ Sandro Ricardo</span>
-        <span id="sync-status">🔄 Inicializando...</span>
-    </div>
-
-    <header>
-        <img src="logo-oficial.jpg" alt="ARPOL" class="logo-img">
-        <h2 style="font-size: 15px;">Almoxarifado ARPOL</h2>
-    </header>
-
-    <div class="content-container">
-        <div class="main-nav">
-            <div class="nav-tab active" id="tab-estoque" onclick="trocarAba('estoque')">📦 Estoque</div>
-            <div class="nav-tab" id="tab-historico" onclick="trocarAba('historico')">📋 Histórico e Relatórios</div>
-        </div>
-
-        <!-- ABA ESTOQUE -->
-        <div id="pane-estoque">
-            <div class="section-card">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                    <h2>Controle de Peças</h2>
-                    <button class="btn-add" onclick="abrirModal()">+ Nova Peça</button>
-                </div>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Descrição</th>
-                                <th>Qtd</th>
-                                <th>UN</th>
-                                <th>Status</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-estoque"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ABA HISTÓRICO E RELATÓRIO -->
-        <div id="pane-historico" style="display: none;">
-            <div class="section-card">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
-                    <h3 style="color: var(--primary);">Histórico de Movimentações</h3>
-                    <button class="btn-del" onclick="limparHistorico()">Limpar Testes</button>
-                </div>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Tipo</th>
-                                <th>Peça</th>
-                                <th>Qtd</th>
-                                <th>Responsável</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-historico"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE CADASTRO -->
-    <div id="modal-novo" class="modal">
-        <div class="modal-card">
-            <h3 style="margin-bottom: 12px; color: var(--primary);">Cadastrar Peça</h3>
-            <div class="form-group"><input type="text" id="m-cod" class="form-control" placeholder="Código (Ex: CABO-01)"></div>
-            <div class="form-group"><input type="text" id="m-desc" class="form-control" placeholder="Descrição da Peça"></div>
-            <div class="form-group" style="display: flex; gap: 8px;">
-                <input type="number" id="m-qtd" class="form-control" placeholder="Qtd" value="1">
-                <input type="text" id="m-un" class="form-control" placeholder="UN, MT..." value="UN">
-            </div>
-            <div style="display: flex; gap: 8px; margin-top: 16px;">
-                <button class="btn-add" style="flex: 1;" onclick="salvarPeca()">Salvar</button>
-                <button class="btn-add" style="background: #6c757d;" onclick="fecharModal()">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // CONFIGURAÇÃO SUPABASE DIRETA E LIMPA
-        const URL = "https://hkxgqsxrpgznlnhvmvaj.supabase.co";
-        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzOTIyNTUsImV4cCI6MjEwODk2ODI1NX0.hHYuiCxqU4KTKoHNlzYD3i1qGt2hPZCJMt2MQvIOHNw";
-        const supabase = window.supabase.createClient(URL, KEY);
-
-        let estoque = [];
-        let historico = [];
-
-        // BUSCA TUDO DO BANCO
-        async function carregarDados() {
-            document.getElementById('sync-status').innerText = "🔄 Sincronizando...";
-            
-            let resEstoque = await supabase.from('estoque').select('*').order('cod');
-            if (resEstoque.data) estoque = resEstoque.data;
-
-            let resHist = await supabase.from('historico_movimentacoes').select('*').order('id', {ascending: false}).limit(30);
-            if (resHist.data) historico = resHist.data;
-
-            renderizarTelas();
-            document.getElementById('sync-status').innerText = "🟢 Online";
+        :root {
+            --primary: #0F5132;
+            --primary-hover: #0b3d26;
+            --primary-light: #e8f5e9;
+            --bg: #f4f6f8;
+            --card-bg: #ffffff;
+            --text: #212529;
+            --text-muted: #6c757d;
+            --border: #dee2e6;
+            --danger: #dc3545;
+            --success: #198754;
+            --warning: #ffc107;
+            --radius: 8px;
         }
-
-        // ALTERAR QUANTIDADE (+ OU -)
-        async function alterarQtd(index, delta) {
-            let item = estoque[index];
-            if (delta < 0 && item.qtd <= 0) return;
-
-            item.qtd += delta;
-            renderizarTelas(); // Atualiza a tela instantaneamente
-
-            // Envia para o histórico
-            let tipo = delta > 0 ? 'ENTRADA' : 'SAÍDA';
-            let dataHora = new Date().toLocaleString('pt-BR');
-            await supabase.from('historico_movimentacoes').insert([{
-                dataHora, tipo, cod: item.cod, desc: item.desc, qtd: Math.abs(delta), usuario: 'Sandro Ricardo'
-            }]);
-
-            // Atualiza o estoque usando Upsert (agora funciona perfeitamente porque 'cod' é Único)
-            await supabase.from('estoque').upsert([{
-                cod: item.cod, desc: item.desc, qtd: item.qtd, un: item.un
-            }], { onConflict: 'cod' });
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-
-        // SALVAR PEÇA NOVA
-        async function salvarPeca() {
-            let cod = document.getElementById('m-cod').value.trim().toUpperCase();
-            let desc = document.getElementById('m-desc').value.trim();
-            let qtd = parseInt(document.getElementById('m-qtd').value) || 0;
-            let un = document.getElementById('m-un').value.trim().toUpperCase();
-            
-            if(!cod || !desc) return alert("Preencha Código e Descrição!");
-
-            fecharModal();
-            document.getElementById('sync-status').innerText = "🔄 Gravando...";
-
-            await supabase.from('estoque').upsert([{ cod, desc, qtd, un }], { onConflict: 'cod' });
-            await supabase.from('historico_movimentacoes').insert([{
-                dataHora: new Date().toLocaleString('pt-BR'), tipo: 'CADASTRO', cod, desc, qtd, usuario: 'Sandro Ricardo'
-            }]);
-            
-            // O realtime vai atualizar a tela automaticamente, mas forçamos recarregamento
-            carregarDados(); 
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding-bottom: 60px;
+            overflow-x: hidden;
         }
-
-        // LIMPAR HISTÓRICO
-        async function limparHistorico() {
-            if(confirm("Apagar testes?")) {
-                await supabase.from('historico_movimentacoes').delete().neq('id', 0);
-                carregarDados();
-            }
+        .status-bar {
+            background: #d1e7dd;
+            color: #0f5132;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        // RENDERIZAR INTERFACE
-        function renderizarTelas() {
-            let tbEst = document.getElementById('tabela-estoque');
-            tbEst.innerHTML = estoque.map((i, idx) => `
-                <tr>
-                    <td><strong>${i.cod}</strong></td>
-                    <td>${i.desc}</td>
-                    <td style="font-weight:bold; font-size:14px;">${i.qtd}</td>
-                    <td>${i.un}</td>
-                    <td><span class="badge ${i.qtd > 3 ? 'badge-ok' : 'badge-alert'}">${i.qtd > 3 ? 'OK' : 'ALERTA'}</span></td>
-                    <td style="white-space:nowrap;">
-                        <button class="btn-action" onclick="alterarQtd(${idx}, 1)">+1</button>
-                        <button class="btn-action out" onclick="alterarQtd(${idx}, -1)">-1</button>
-                    </td>
-                </tr>
-            `).join('');
-
-            let tbHist = document.getElementById('tabela-historico');
-            tbHist.innerHTML = historico.map(h => `
-                <tr>
-                    <td style="font-size:11px; color:#6c757d;">${h.dataHora}</td>
-                    <td><span class="badge ${h.tipo.includes('ENTRADA') ? 'badge-ok' : 'badge-alert'}">${h.tipo}</span></td>
-                    <td><strong>${h.cod}</strong> - ${h.desc}</td>
-                    <td style="font-weight:bold;">${h.qtd}</td>
-                    <td style="font-size:11px;">${h.usuario}</td>
-                </tr>
-            `).join('');
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-
-        // UTILITÁRIOS DA PÁGINA
-        function trocarAba(aba) {
-            document.getElementById('pane-estoque').style.display = aba === 'estoque' ? 'block' : 'none';
-            document.getElementById('pane-historico').style.display = aba === 'historico' ? 'block' : 'none';
-            document.getElementById('tab-estoque').className = aba === 'estoque' ? 'nav-tab active' : 'nav-tab';
-            document.getElementById('tab-historico').className = aba === 'historico' ? 'nav-tab active' : 'nav-tab';
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        function abrirModal() { document.getElementById('modal-novo').style.display = 'flex'; }
-        function fecharModal() { document.getElementById('modal-novo').style.display = 'none'; }
-
-        // ESCUTA O BANCO EM TEMPO REAL
-        supabase.channel('mudancas')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, () => carregarDados())
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'historico_movimentacoes' }, () => carregarDados())
-            .subscribe();
-
-        // INICIA
-        carregarDados();
-    </script>
-</body>
-</html>
+        .logo-img {
+            height: 36px;
+            width: auto;
+            object-fit: contain;
+            background: #ffffff;
+            padding: 2px;
+            border-radius: 4px;
+        }
+        .logo-text {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .user-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .content-container {
+            max-width: 1100px;
+            margin: 14px auto;
+            padding: 0 12px;
+        }
+        .main-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+        .nav-tab {
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            user-select: none;
+        }
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            margin-bottom: 14px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-add:hover { background: var(--primary-hover); }
+        .btn-gold {
+            background: #d97706;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-blue {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-del-item {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            min-width: 580px;
+        }
+        th {
+            background: #f8f9fa;
+            color: var(--text-muted);
+            text-align: left;
+            padding: 8px
