@@ -110,4 +110,147 @@
         // CONFIGURAÇÃO
         const supabaseUrl = 'https://hkxgqsxrpgznlnhvmvaj.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzOTIyNTUsImV4cCI6MjEwODk2ODI1NX0.hHYuiCxqU4KTKoHNlzYD3i1qGt2hPZCJMt2MQvIOHNw';
-        const supabase = window.supabase.
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let estoqueData = [];
+        let historicoData = [];
+
+        // 1. CARREGAR DADOS
+        async function carregarDados() {
+            try {
+                document.getElementById('status-conexao').innerText = "🔄 Atualizando...";
+                document.getElementById('status-conexao').style.background = "rgba(255,255,255,0.2)";
+
+                // Busca Estoque
+                const { data: est } = await supabase.from('estoque').select('*').order('cod');
+                if (est) estoqueData = est;
+
+                // Busca Histórico
+                const { data: hist } = await supabase.from('historico_movimentacoes').select('*').order('id', { ascending: false }).limit(40);
+                if (hist) historicoData = hist;
+
+                desenharTelas();
+                
+                document.getElementById('status-conexao').innerText = "🟢 Online";
+                document.getElementById('status-conexao').style.background = "rgba(0,0,0,0.3)";
+            } catch (error) {
+                console.error(error);
+                document.getElementById('status-conexao').innerText = "🔴 Erro de Rede";
+            }
+        }
+
+        // 2. DESENHAR INTERFACE
+        function desenharTelas() {
+            // Desenhar Estoque
+            const divEstoque = document.getElementById('lista-estoque');
+            if(estoqueData.length === 0) {
+                divEstoque.innerHTML = '<p style="text-align:center; color:#888;">Nenhuma peça no estoque.</p>';
+            } else {
+                divEstoque.innerHTML = estoqueData.map((item, index) => `
+                    <div class="card">
+                        <div class="card-info">
+                            <h3>${item.cod}</h3>
+                            <p>${item.desc} | ${item.un}</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-redondo" onclick="alterarQtd(${index}, -1)">-</button>
+                            <div class="qtd-display">${item.qtd}</div>
+                            <button class="btn-redondo" onclick="alterarQtd(${index}, 1)">+</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Desenhar Histórico
+            const divHistorico = document.getElementById('lista-historico');
+            if(historicoData.length === 0) {
+                divHistorico.innerHTML = '<p style="text-align:center; color:#888;">Nenhum histórico recente.</p>';
+            } else {
+                divHistorico.innerHTML = historicoData.map(item => `
+                    <div class="historico-item">
+                        <div class="hist-top">
+                            <span>${item.dataHora}</span>
+                            <span>Sandro Ricardo</span>
+                        </div>
+                        <div class="hist-main">
+                            <span><strong>${item.cod}</strong> (${item.desc})</span>
+                            <span class="${item.tipo.includes('ENTRADA') ? 'badge-in' : 'badge-out'}">
+                                ${item.tipo.includes('ENTRADA') ? '+' : '-'}${item.qtd}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // 3. ALTERAR QUANTIDADE NO BANCO
+        async function alterarQtd(index, valor) {
+            const peca = estoqueData[index];
+            if (valor < 0 && peca.qtd <= 0) return; // Não deixa ficar negativo
+
+            // Atualiza tela instantaneamente (UX)
+            peca.qtd += valor;
+            desenharTelas();
+
+            // Grava Histórico
+            const tipo = valor > 0 ? 'ENTRADA' : 'SAÍDA';
+            const dataHora = new Date().toLocaleString('pt-BR');
+            await supabase.from('historico_movimentacoes').insert([{
+                dataHora, tipo, cod: peca.cod, desc: peca.desc, qtd: Math.abs(valor), usuario: 'Sandro Ricardo'
+            }]);
+
+            // Grava Estoque
+            await supabase.from('estoque').upsert([{
+                cod: peca.cod, desc: peca.desc, qtd: peca.qtd, un: peca.un
+            }], { onConflict: 'cod' });
+        }
+
+        // 4. CADASTRAR NOVA PEÇA
+        async function salvarNovaPeca() {
+            const cod = document.getElementById('novo-cod').value.trim().toUpperCase();
+            const desc = document.getElementById('novo-desc').value.trim();
+            const qtd = parseInt(document.getElementById('novo-qtd').value) || 0;
+            const un = document.getElementById('novo-un').value.trim().toUpperCase();
+
+            if(!cod || !desc) { alert("Preencha Código e Descrição!"); return; }
+
+            fecharModal();
+            document.getElementById('status-conexao').innerText = "🔄 Gravando...";
+
+            // Salva no banco
+            await supabase.from('estoque').upsert([{ cod, desc, qtd, un }], { onConflict: 'cod' });
+            await supabase.from('historico_movimentacoes').insert([{
+                dataHora: new Date().toLocaleString('pt-BR'), tipo: 'ENTRADA (NOVO)', cod, desc, qtd, usuario: 'Sandro Ricardo'
+            }]);
+
+            // Limpa formulário e recarrega
+            document.getElementById('novo-cod').value = '';
+            document.getElementById('novo-desc').value = '';
+            document.getElementById('novo-qtd').value = '1';
+            carregarDados();
+        }
+
+        // 5. NAVEGAÇÃO E MODAIS
+        function mudarAba(aba, elemento) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(`page-${aba}`).classList.add('active');
+            elemento.classList.add('active');
+        }
+
+        function abrirModal() { document.getElementById('modal').style.display = 'flex'; }
+        function fecharModal() { document.getElementById('modal').style.display = 'none'; }
+
+        // 6. ATUALIZAÇÃO EM TEMPO REAL (REALTIME)
+        supabase.channel('public:estoque')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, payload => {
+                carregarDados(); // Recarrega se alguém mexer no outro celular
+            })
+            .subscribe();
+
+        // INICIAR O APLICATIVO
+        carregarDados();
+
+    </script>
+</body>
+</html>
