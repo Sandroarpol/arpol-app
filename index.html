@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ARPOL - Sistema de Gestão e Almoxarifado</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary: #0F5132;
@@ -29,12 +30,13 @@
             background-color: var(--bg);
             color: var(--text);
             padding-bottom: 60px;
+            overflow-x: hidden;
         }
         .status-bar {
             background: #d1e7dd;
             color: #0f5132;
-            padding: 8px 16px;
-            font-size: 12px;
+            padding: 6px 12px;
+            font-size: 11px;
             font-weight: 600;
             display: flex;
             justify-content: space-between;
@@ -43,7 +45,7 @@
         header {
             background: var(--card-bg);
             border-bottom: 1px solid var(--border);
-            padding: 12px 24px;
+            padding: 10px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -54,43 +56,43 @@
         .logo-container {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
         .logo-img {
-            height: 40px;
+            height: 36px;
             width: auto;
             object-fit: contain;
             background: #ffffff;
-            padding: 2px 4px;
+            padding: 2px;
             border-radius: 4px;
         }
         .logo-text {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 700;
             color: #1e293b;
         }
         .user-badge {
             background: var(--primary-light);
             color: var(--primary);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
             font-weight: 600;
         }
         .content-container {
             max-width: 1100px;
-            margin: 24px auto;
-            padding: 0 16px;
+            margin: 14px auto;
+            padding: 0 12px;
         }
         .main-nav {
             display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 8px;
+            margin-bottom: 16px;
             border-bottom: 2px solid var(--border);
         }
         .nav-tab {
-            padding: 10px 16px;
-            font-size: 14px;
+            padding: 8px 12px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-muted);
             cursor: pointer;
@@ -106,15 +108,15 @@
             background: var(--card-bg);
             border-radius: var(--radius);
             border: 1px solid var(--border);
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-            margin-bottom: 20px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            margin-bottom: 14px;
         }
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
         .card-header h2 {
             font-size: 16px;
@@ -126,7 +128,7 @@
             border: none;
             padding: 8px 14px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
         }
@@ -135,71 +137,153 @@
             background: #d97706;
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
         }
-        .btn-gold:hover { background: #b45309; }
         .btn-blue {
             background: #0284c7;
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 12px;
             border-radius: 6px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
         }
-        .btn-blue:hover { background: #0369a1; }
-        
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 13px;
+            min-width: 580px;
         }
         th {
             background: #f8f9fa;
             color: var(--text-muted);
             text-align: left;
-            padding: 10px 12px;
+            padding: 8px 10px;
             font-weight: 600;
             border-bottom: 1px solid var(--border);
         }
         td {
-            padding: 12px;
+            padding: 10px 8px;
             border-bottom: 1px solid #f1f3f5;
             vertical-align: middle;
         }
         .badge-status {
-            padding: 4px 8px;
+            padding: 3px 6px;
             border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
+            white-space: nowrap;
         }
         .badge-estoque { background: #d1e7dd; color: #0f5132; }
         .badge-baixo { background: #fff3cd; color: #664d03; }
         .badge-esgotado { background: #f8d7da; color: #842029; }
+        
         .btn-action {
             padding: 6px 10px;
             border-radius: 4px;
             font-size: 12px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             border: none;
             background: #0f5132;
             color: white;
             margin-right: 4px;
+            white-space: nowrap;
         }
         .btn-action.out { background: #495057; }
+
+        /* MODAL DE CADASTRO COMPLETO */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+        .modal-card {
+            background: white;
+            border-radius: 8px;
+            max-width: 480px;
+            width: 100%;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        }
+        .modal-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 14px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 6px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .form-control {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        .form-row { display: flex; gap: 8px; }
+        .form-col { flex: 1; }
+
+        @media print {
+            body { background: white !important; padding: 0 !important; color: black !important; }
+            .status-bar, header, .main-nav, #pane-estoque, .btn-toolbar, .no-print, .modal-overlay { display: none !important; }
+            .content-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            #pane-relatorios { display: block !important; }
+            .table-responsive { overflow: visible !important; }
+            table { min-width: 100% !important; }
+            .section-card { box-shadow: none !important; border: 1px solid #cbd5e1 !important; page-break-inside: avoid; }
+            .print-only-header { display: flex !important; justify-content: space-between; align-items: center; border-bottom: 2px solid #0F5132; padding-bottom: 12px; margin-bottom: 20px; }
+        }
+        .print-only-header { display: none; }
     </style>
 </head>
 <body>
 
     <div class="status-bar">
-        <span>✅ <strong>Acesso Direto ARPOL:</strong> Sandro Ricardo (Administrador)</span>
-        <span id="sync-status">🟢 Almoxarifado Operacional</span>
+        <span>✅ <strong>Acesso Direto ARPOL:</strong> Sandro Ricardo</span>
+        <span id="sync-status">🔄 Conectando...</span>
+    </div>
+
+    <div class="print-only-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <img src="logo-oficial.jpg" alt="ARPOL" style="height: 48px; width: auto; object-fit: contain;">
+            <div>
+                <div style="font-size: 16px; font-weight: 800; color: #0F5132;">ARPOL CONFORTO TÉRMICO</div>
+                <div style="font-size: 11px; color: #64748b;">Relatório Técnico Operacional de Materiais & Almoxarifado</div>
+            </div>
+        </div>
+        <div style="text-align: right; font-size: 11px; color: #475569;">
+            <div><strong>Emissão:</strong> <span id="print-data-emissao"></span></div>
+            <div><strong>Responsável:</strong> Sandro Ricardo</div>
+        </div>
     </div>
 
     <header>
@@ -222,120 +306,244 @@
         <div id="pane-estoque" class="tab-pane">
             <div class="section-card">
                 <div class="card-header">
-                    <h2>Movimentação de Peças & Almoxarifado</h2>
-                    <button class="btn-add" onclick="adicionarNovoItem()">+ Novo Item</button>
+                    <h2>Movimentação de Peças</h2>
+                    <button class="btn-add" onclick="abrirModalCadastro()">+ Novo Item</button>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Descrição do Material</th>
-                            <th>Quantidade</th>
-                            <th>Unidade</th>
-                            <th>Estado</th>
-                            <th>Ações de Entrada / Saída</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-corpo"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Descrição do Material</th>
+                                <th>Quantidade</th>
+                                <th>Unidade</th>
+                                <th>Estado</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-corpo"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- ABA 2: RELATÓRIOS OPERACIONAIS (PEÇAS E FLUXO) -->
         <div id="pane-relatorios" class="tab-pane" style="display: none;">
+            <div class="section-card no-print btn-toolbar" style="display: flex; justify-content: space-between; align-items: center; background: #e8f5e9; border: 1px solid #c3e6cb; flex-wrap: wrap; gap: 8px;">
+                <div>
+                    <strong style="color: #0f5132;">Exportação do Relatório</strong>
+                    <div style="font-size: 11px; color: #475569;">Documento em formato A4 para impressão ou PDF</div>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn-blue" onclick="visualizarRelatorioModal()">👁️ Ver</button>
+                    <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ PDF / Imprimir</button>
+                </div>
+            </div>
+
             <!-- Peças Abaixo do Mínimo -->
             <div class="section-card" style="border-left: 4px solid var(--danger);">
-                <h3 style="color: var(--danger); margin-bottom: 12px;">⚠️ Peças Abaixo do Estoque Mínimo (Reposição Urgente)</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Descrição da Peça</th>
-                            <th style="text-align: center;">Qtd Atual</th>
-                            <th style="text-align: center;">Estoque Mínimo</th>
-                            <th style="text-align: center;">Situação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-estoque-critico"></tbody>
-                </table>
+                <h3 style="color: var(--danger); margin-bottom: 10px; font-size: 14px;">⚠️ Peças Abaixo do Estoque Mínimo (Reposição)</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Descrição da Peça</th>
+                                <th style="text-align: center;">Atual</th>
+                                <th style="text-align: center;">Mínimo</th>
+                                <th style="text-align: center;">Situação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-estoque-critico"></tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Histórico de Entradas e Saídas -->
             <div class="section-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                    <h3 style="color: var(--primary);">📋 Histórico de Movimentações (Entradas e Saídas)</h3>
-                    <span style="font-size: 12px; color: var(--text-muted);">Registro de fluxo de materiais</span>
+                <div style="margin-bottom: 10px;">
+                    <h3 style="color: var(--primary); font-size: 14px;">📋 Histórico de Movimentações</h3>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Data / Hora</th>
-                            <th>Tipo</th>
-                            <th>Código</th>
-                            <th>Descrição</th>
-                            <th style="text-align: center;">Quantidade</th>
-                            <th>Responsável</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-historico-movimentacoes"></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data / Hora</th>
+                                <th>Tipo</th>
+                                <th>Código</th>
+                                <th>Descrição</th>
+                                <th style="text-align: center;">Qtd</th>
+                                <th>Responsável</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-historico-movimentacoes"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- MODAL DE CADASTRO COMPLETO (TUDO NA MESMA JANELA) -->
+    <div id="modal-cadastro" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-title">Cadastrar Novo Item no Estoque</div>
+            <form id="form-novo-item" onsubmit="salvarNovoItemForm(event)">
+                <div class="form-group">
+                    <label>Código da Peça / Material</label>
+                    <input type="text" id="cad-cod" class="form-control" placeholder="Ex: GAS-R410A" required>
+                </div>
+                <div class="form-group">
+                    <label>Descrição do Material</label>
+                    <input type="text" id="cad-desc" class="form-control" placeholder="Ex: Tubo de Cobre 3/8..." required>
+                </div>
+                <div class="form-row">
+                    <div class="form-col form-group">
+                        <label>Qtd Inicial</label>
+                        <input type="number" id="cad-qtd" class="form-control" min="0" value="1" required>
+                    </div>
+                    <div class="form-col form-group">
+                        <label>Unidade</label>
+                        <input type="text" id="cad-un" class="form-control" placeholder="UN, PC, MT, KG" value="UN" required>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                    <button type="submit" class="btn-add" style="flex: 1; padding: 10px;">Gravar no Estoque</button>
+                    <button type="button" class="btn-add" style="background: #64748b; padding: 10px;" onclick="fecharModalCadastro()">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE PRÉ-VISUALIZAÇÃO A4 -->
+    <div id="modal-preview" class="modal-overlay">
+        <div class="modal-card" style="max-width: 800px; max-height: 85vh; overflow-y: auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="font-size: 14px;">Visualização para Impressão</h3>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ Imprimir / Salvar PDF</button>
+                    <button class="btn-add" style="background: #64748b;" onclick="fecharModalPreview()">Fechar</button>
+                </div>
+            </div>
+            <div id="modal-body-content"></div>
+        </div>
+    </div>
+
     <script>
-        const itensIniciais = [
-            { cod: "GAS-R410A", desc: "Gás Refrigerante R410A - Botija 11,3kg", qtd: 11, un: "UN" },
-            { cod: "CAP-45UF", desc: "Capacitor 45uF 440VAC Duplo", qtd: 16, un: "PC" },
-            { cod: "TUB-12", desc: "Tubo de Cobre 1/2 flexível", qtd: 30, un: "MT" },
-            { cod: "VALV-01", desc: "Válvula de Expansão Termostática", qtd: 0, un: "PC" },
-            { cod: "TERM-DIG", desc: "Termômetro Penta Digital", qtd: 2, un: "UN" }
-        ];
+        const SUPABASE_URL = "https://hkxgqsxrpgznlnhvmvaj.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhreGdxc3hycGd6bmxuaHZtdmFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzOTIyNTUsImV4cCI6MjEwODk2ODI1NX0.hHYuiCxqU4KTKoHNlzYD3i1qGt2hPZCJMt2MQvIOHNw";
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let estoque = [];
+        let historico = [];
 
-        let estoque = JSON.parse(localStorage.getItem('arpol_estoque_db')) || itensIniciais;
-        let historico = JSON.parse(localStorage.getItem('arpol_historico_movimentos')) || [];
+        async function carregarDadosSupabase() {
+            const statusEl = document.getElementById('sync-status');
+            try {
+                statusEl.innerText = "🔄 Sincronizando...";
 
-        function salvarEstoque() {
-            localStorage.setItem('arpol_estoque_db', JSON.stringify(estoque));
-            localStorage.setItem('arpol_historico_movimentos', JSON.stringify(historico));
-            renderizarTabela();
-            atualizarRelatorioPecas();
+                const { data: dataEstoque, error: errEstoque } = await supabaseClient
+                    .from('estoque')
+                    .select('*')
+                    .order('cod', { ascending: true });
+
+                if (!errEstoque && dataEstoque && dataEstoque.length > 0) {
+                    estoque = dataEstoque;
+                } else {
+                    estoque = JSON.parse(localStorage.getItem('arpol_estoque_db')) || [
+                        { cod: "GAS-R410A", desc: "Gás Refrigerante R410A - Botija 11,3kg", qtd: 11, un: "UN" },
+                        { cod: "CAP-45UF", desc: "Capacitor 45uF 440VAC Duplo", qtd: 16, un: "PC" },
+                        { cod: "TUB-12", desc: "Tubo de Cobre 1/2 flexível", qtd: 30, un: "MT" },
+                        { cod: "VALV-01", desc: "Válvula de Expansão Termostática", qtd: 0, un: "PC" },
+                        { cod: "TERM-DIG", desc: "Termômetro Penta Digital", qtd: 2, un: "UN" }
+                    ];
+                }
+
+                const { data: dataHist, error: errHist } = await supabaseClient
+                    .from('historico_movimentacoes')
+                    .select('*')
+                    .order('id', { ascending: false })
+                    .limit(30);
+
+                if (!errHist && dataHist) {
+                    historico = dataHist;
+                } else {
+                    historico = JSON.parse(localStorage.getItem('arpol_historico_movimentos') || '[]');
+                }
+
+                statusEl.innerText = "🟢 Sincronizado Supabase";
+                renderizarTabela();
+                atualizarRelatorioPecas();
+
+            } catch (err) {
+                console.error(err);
+                statusEl.innerText = "🟡 Modo Offline (Local)";
+                estoque = JSON.parse(localStorage.getItem('arpol_estoque_db')) || [];
+                historico = JSON.parse(localStorage.getItem('arpol_historico_movimentos') || '[]');
+                renderizarTabela();
+                atualizarRelatorioPecas();
+            }
         }
 
-        function registrarHistorico(tipo, cod, desc, qtd) {
+        async function registrarHistorico(tipo, cod, desc, qtd) {
             const agora = new Date();
             const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
-            historico.unshift({
-                dataHora: dataHora,
-                tipo: tipo,
-                cod: cod,
-                desc: desc,
-                qtd: qtd,
-                usuario: 'Sandro Ricardo'
-            });
-            salvarEstoque();
+            const novoMov = { dataHora, tipo, cod, desc, qtd, usuario: 'Sandro Ricardo' };
+
+            historico.unshift(novoMov);
+            localStorage.setItem('arpol_historico_movimentos', JSON.stringify(historico));
+
+            try {
+                await supabaseClient.from('historico_movimentacoes').insert([novoMov]);
+            } catch(e) { console.warn(e); }
         }
 
-        function alterarQuantidade(index, delta) {
+        async function alterarQuantidade(index, delta) {
             const item = estoque[index];
             if (delta < 0 && item.qtd <= 0) return;
-            
+
             item.qtd += delta;
             registrarHistorico(delta > 0 ? 'ENTRADA' : 'SAÍDA', item.cod, item.desc, Math.abs(delta));
+            
+            renderizarTabela();
+            atualizarRelatorioPecas();
+            localStorage.setItem('arpol_estoque_db', JSON.stringify(estoque));
+
+            try {
+                await supabaseClient.from('estoque').upsert([item], { onConflict: 'cod' });
+            } catch(e) { console.warn(e); }
         }
 
-        function adicionarNovoItem() {
-            const cod = prompt("Código do Material (Ex: FILT-01):");
-            if (!cod) return;
-            const desc = prompt("Descrição do Material:");
-            if (!desc) return;
-            const qtdStr = prompt("Quantidade inicial:", "1");
-            const qtd = parseInt(qtdStr || "0");
-            const un = prompt("Unidade de Medida (UN, PC, MT, KG):", "UN") || "UN";
+        function abrirModalCadastro() {
+            document.getElementById('cad-cod').value = '';
+            document.getElementById('cad-desc').value = '';
+            document.getElementById('cad-qtd').value = '1';
+            document.getElementById('cad-un').value = 'UN';
+            document.getElementById('modal-cadastro').style.display = 'flex';
+        }
 
-            const novo = { cod: cod.toUpperCase(), desc: desc, qtd: isNaN(qtd) ? 0 : qtd, un: un.toUpperCase() };
+        function fecharModalCadastro() {
+            document.getElementById('modal-cadastro').style.display = 'none';
+        }
+
+        async function salvarNovoItemForm(e) {
+            e.preventDefault();
+            const cod = document.getElementById('cad-cod').value.trim().toUpperCase();
+            const desc = document.getElementById('cad-desc').value.trim();
+            const qtd = parseInt(document.getElementById('cad-qtd').value || '0');
+            const un = document.getElementById('cad-un').value.trim().toUpperCase();
+
+            const novo = { cod, desc, qtd: isNaN(qtd) ? 0 : qtd, un };
             estoque.push(novo);
             registrarHistorico('ENTRADA (CADASTRO)', novo.cod, novo.desc, novo.qtd);
+
+            renderizarTabela();
+            atualizarRelatorioPecas();
+            localStorage.setItem('arpol_estoque_db', JSON.stringify(estoque));
+            fecharModalCadastro();
+
+            try {
+                await supabaseClient.from('estoque').upsert([novo], { onConflict: 'cod' });
+            } catch(e) { console.warn(e); }
         }
 
         function renderizarTabela() {
@@ -363,8 +571,8 @@
                     <td>${item.un || 'UN'}</td>
                     <td><span class="badge-status ${badgeClass}">${statusTexto}</span></td>
                     <td>
-                        <button class="btn-action" onclick="alterarQuantidade(${index}, 1)">+1 Entrada</button>
-                        <button class="btn-action out" onclick="alterarQuantidade(${index}, -1)">-1 Saída</button>
+                        <button class="btn-action" onclick="alterarQuantidade(${index}, 1)">+1</button>
+                        <button class="btn-action out" onclick="alterarQuantidade(${index}, -1)">-1</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -378,7 +586,7 @@
 
             const criticos = estoque.filter(item => Number(item.qtd) <= 3);
             if (criticos.length === 0) {
-                tabelaCriticos.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 14px; color: #198754; font-weight: 600;">✅ Nenhum item abaixo do estoque mínimo.</td></tr>';
+                tabelaCriticos.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 12px; color: #198754; font-weight: 600;">✅ Nenhuma peça abaixo do estoque mínimo.</td></tr>';
             } else {
                 tabelaCriticos.innerHTML = criticos.map(item => `
                     <tr>
@@ -388,7 +596,7 @@
                         <td style="text-align: center;">3 ${item.un || 'UN'}</td>
                         <td style="text-align: center;">
                             <span class="badge-status ${item.qtd == 0 ? 'badge-esgotado' : 'badge-baixo'}">
-                                ${item.qtd == 0 ? 'ZERADO' : 'BAIXO ESTOQUE'}
+                                ${item.qtd == 0 ? 'ZERADO' : 'BAIXO'}
                             </span>
                         </td>
                     </tr>
@@ -396,11 +604,11 @@
             }
 
             if (historico.length === 0) {
-                tabelaMovimentos.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 14px; color: #6c757d;">Nenhuma movimentação registrada recentemente.</td></tr>';
+                tabelaMovimentos.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 12px; color: #6c757d;">Nenhuma movimentação registrada.</td></tr>';
             } else {
-                tabelaMovimentos.innerHTML = historico.slice(0, 30).map(m => `
+                tabelaMovimentos.innerHTML = historico.slice(0, 20).map(m => `
                     <tr>
-                        <td style="color: #6c757d; font-size: 12px;">${m.dataHora}</td>
+                        <td style="color: #6c757d; font-size: 11px;">${m.dataHora}</td>
                         <td>
                             <span class="badge-status ${String(m.tipo).includes('ENTRADA') ? 'badge-estoque' : 'badge-esgotado'}">
                                 ${m.tipo}
@@ -409,7 +617,7 @@
                         <td><strong>${m.cod}</strong></td>
                         <td>${m.desc}</td>
                         <td style="text-align: center; font-weight: bold;">${m.qtd}</td>
-                        <td style="font-size: 12px;">${m.usuario}</td>
+                        <td style="font-size: 11px;">${m.usuario}</td>
                     </tr>
                 `).join('');
             }
@@ -435,8 +643,50 @@
             }
         }
 
-        renderizarTabela();
-        atualizarRelatorioPecas();
+        function visualizarRelatorioModal() {
+            atualizarRelatorioPecas();
+            const modal = document.getElementById('modal-preview');
+            const body = document.getElementById('modal-body-content');
+            const agora = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+            
+            body.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0F5132; padding-bottom:8px; margin-bottom:14px;">
+                    <img src="logo-oficial.jpg" style="height:36px;">
+                    <div style="text-align:right; font-size:11px;">
+                        <div><strong>ARPOL CONFORTO TÉRMICO</strong></div>
+                        <div>Emissão: ${agora}</div>
+                    </div>
+                </div>
+                ${document.getElementById('pane-relatorios').innerHTML}
+            `;
+            const tb = body.querySelector('.btn-toolbar');
+            if (tb) tb.remove();
+            
+            modal.style.display = 'flex';
+        }
+
+        function fecharModalPreview() {
+            document.getElementById('modal-preview').style.display = 'none';
+        }
+
+        function gerarPdfRelatorio() {
+            const elData = document.getElementById('print-data-emissao');
+            if (elData) {
+                elData.innerText = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+            }
+            fecharModalPreview();
+            window.print();
+        }
+
+        carregarDadosSupabase();
+
+        // Escuta atualizações automáticas em tempo real
+        supabaseClient
+            .channel('mudancas-estoque')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, () => {
+                carregarDadosSupabase();
+            })
+            .subscribe();
     </script>
 </body>
 </html>
