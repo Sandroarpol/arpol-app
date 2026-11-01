@@ -444,4 +444,249 @@
                 const { data: dataEstoque, error: errEstoque } = await supabaseClient
                     .from('estoque')
                     .select('*')
-                    .order('cod', { ascending
+                    .order('cod', { ascending: true });
+
+                if (!errEstoque && dataEstoque && dataEstoque.length > 0) {
+                    estoque = dataEstoque;
+                } else {
+                    estoque = JSON.parse(localStorage.getItem('arpol_estoque_db')) || [
+                        { cod: "GAS-R410A", desc: "Gás Refrigerante R410A - Botija 11,3kg", qtd: 11, un: "UN" },
+                        { cod: "CAP-45UF", desc: "Capacitor 45uF 440VAC Duplo", qtd: 16, un: "PC" },
+                        { cod: "TUB-12", desc: "Tubo de Cobre 1/2 flexível", qtd: 30, un: "MT" },
+                        { cod: "VALV-01", desc: "Válvula de Expansão Termostática", qtd: 0, un: "PC" },
+                        { cod: "TERM-DIG", desc: "Termômetro Penta Digital", qtd: 2, un: "UN" }
+                    ];
+                }
+
+                const { data: dataHist, error: errHist } = await supabaseClient
+                    .from('historico_movimentacoes')
+                    .select('*')
+                    .order('id', { ascending: false })
+                    .limit(30);
+
+                if (!errHist && dataHist) {
+                    historico = dataHist;
+                } else {
+                    historico = JSON.parse(localStorage.getItem('arpol_historico_movimentos') || '[]');
+                }
+
+                statusEl.innerText = "🟢 Sincronizado Supabase";
+                renderizarTabela();
+                atualizarRelatorioPecas();
+
+            } catch (err) {
+                console.error(err);
+                statusEl.innerText = "🟡 Modo Offline (Local)";
+                estoque = JSON.parse(localStorage.getItem('arpol_estoque_db')) || [];
+                historico = JSON.parse(localStorage.getItem('arpol_historico_movimentos') || '[]');
+                renderizarTabela();
+                atualizarRelatorioPecas();
+            }
+        }
+
+        async function registrarHistorico(tipo, cod, desc, qtd) {
+            const agora = new Date();
+            const dataHora = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+            const novoMov = { dataHora, tipo, cod, desc, qtd, usuario: 'Sandro Ricardo' };
+
+            historico.unshift(novoMov);
+            localStorage.setItem('arpol_historico_movimentos', JSON.stringify(historico));
+
+            try {
+                await supabaseClient.from('historico_movimentacoes').insert([novoMov]);
+            } catch(e) { console.warn(e); }
+        }
+
+        async function alterarQuantidade(index, delta) {
+            const item = estoque[index];
+            if (delta < 0 && item.qtd <= 0) return;
+
+            item.qtd += delta;
+            registrarHistorico(delta > 0 ? 'ENTRADA' : 'SAÍDA', item.cod, item.desc, Math.abs(delta));
+            
+            renderizarTabela();
+            atualizarRelatorioPecas();
+            localStorage.setItem('arpol_estoque_db', JSON.stringify(estoque));
+
+            try {
+                await supabaseClient.from('estoque').upsert([item], { onConflict: 'cod' });
+            } catch(e) { console.warn(e); }
+        }
+
+        function abrirModalCadastro() {
+            document.getElementById('cad-cod').value = '';
+            document.getElementById('cad-desc').value = '';
+            document.getElementById('cad-qtd').value = '1';
+            document.getElementById('cad-un').value = 'UN';
+            document.getElementById('modal-cadastro').style.display = 'flex';
+        }
+
+        function fecharModalCadastro() {
+            document.getElementById('modal-cadastro').style.display = 'none';
+        }
+
+        async function salvarNovoItemForm(e) {
+            e.preventDefault();
+            const cod = document.getElementById('cad-cod').value.trim().toUpperCase();
+            const desc = document.getElementById('cad-desc').value.trim();
+            const qtd = parseInt(document.getElementById('cad-qtd').value || '0');
+            const un = document.getElementById('cad-un').value.trim().toUpperCase();
+
+            const novo = { cod, desc, qtd: isNaN(qtd) ? 0 : qtd, un };
+            estoque.push(novo);
+            registrarHistorico('ENTRADA (CADASTRO)', novo.cod, novo.desc, novo.qtd);
+
+            renderizarTabela();
+            atualizarRelatorioPecas();
+            localStorage.setItem('arpol_estoque_db', JSON.stringify(estoque));
+            fecharModalCadastro();
+
+            try {
+                await supabaseClient.from('estoque').upsert([novo], { onConflict: 'cod' });
+            } catch(e) { console.warn(e); }
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabela-corpo');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            estoque.forEach((item, index) => {
+                let badgeClass = 'badge-estoque';
+                let statusTexto = 'Em Estoque';
+
+                if (item.qtd === 0) {
+                    badgeClass = 'badge-esgotado';
+                    statusTexto = 'Esgotado';
+                } else if (item.qtd <= 3) {
+                    badgeClass = 'badge-baixo';
+                    statusTexto = 'Baixo Estoque';
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${item.cod}</strong></td>
+                    <td>${item.desc}</td>
+                    <td><strong>${item.qtd}</strong></td>
+                    <td>${item.un || 'UN'}</td>
+                    <td><span class="badge-status ${badgeClass}">${statusTexto}</span></td>
+                    <td>
+                        <button class="btn-action" onclick="alterarQuantidade(${index}, 1)">+1</button>
+                        <button class="btn-action out" onclick="alterarQuantidade(${index}, -1)">-1</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function atualizarRelatorioPecas() {
+            const tabelaCriticos = document.getElementById('lista-estoque-critico');
+            const tabelaMovimentos = document.getElementById('lista-historico-movimentacoes');
+            if (!tabelaCriticos || !tabelaMovimentos) return;
+
+            const criticos = estoque.filter(item => Number(item.qtd) <= 3);
+            if (criticos.length === 0) {
+                tabelaCriticos.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 12px; color: #198754; font-weight: 600;">✅ Nenhuma peça abaixo do estoque mínimo.</td></tr>';
+            } else {
+                tabelaCriticos.innerHTML = criticos.map(item => `
+                    <tr>
+                        <td><strong>${item.cod}</strong></td>
+                        <td>${item.desc}</td>
+                        <td style="text-align: center; color: var(--danger); font-weight: bold;">${item.qtd} ${item.un || 'UN'}</td>
+                        <td style="text-align: center;">3 ${item.un || 'UN'}</td>
+                        <td style="text-align: center;">
+                            <span class="badge-status ${item.qtd == 0 ? 'badge-esgotado' : 'badge-baixo'}">
+                                ${item.qtd == 0 ? 'ZERADO' : 'BAIXO'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            if (historico.length === 0) {
+                tabelaMovimentos.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 12px; color: #6c757d;">Nenhuma movimentação registrada.</td></tr>';
+            } else {
+                tabelaMovimentos.innerHTML = historico.slice(0, 20).map(m => `
+                    <tr>
+                        <td style="color: #6c757d; font-size: 11px;">${m.dataHora}</td>
+                        <td>
+                            <span class="badge-status ${String(m.tipo).includes('ENTRADA') ? 'badge-estoque' : 'badge-esgotado'}">
+                                ${m.tipo}
+                            </span>
+                        </td>
+                        <td><strong>${m.cod}</strong></td>
+                        <td>${m.desc}</td>
+                        <td style="text-align: center; font-weight: bold;">${m.qtd}</td>
+                        <td style="font-size: 11px;">${m.usuario}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function alternarAba(aba) {
+            const paneEstoque = document.getElementById('pane-estoque');
+            const paneRel = document.getElementById('pane-relatorios');
+            const btnEstoque = document.getElementById('tab-btn-estoque');
+            const btnRel = document.getElementById('tab-btn-relatorios');
+
+            if (aba === 'estoque') {
+                paneEstoque.style.display = 'block';
+                paneRel.style.display = 'none';
+                btnEstoque.classList.add('active');
+                btnRel.classList.remove('active');
+            } else {
+                paneEstoque.style.display = 'none';
+                paneRel.style.display = 'block';
+                btnEstoque.classList.remove('active');
+                btnRel.classList.add('active');
+                atualizarRelatorioPecas();
+            }
+        }
+
+        function visualizarRelatorioModal() {
+            atualizarRelatorioPecas();
+            const modal = document.getElementById('modal-preview');
+            const body = document.getElementById('modal-body-content');
+            const agora = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+            
+            body.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0F5132; padding-bottom:8px; margin-bottom:14px;">
+                    <img src="logo-oficial.jpg" style="height:36px;">
+                    <div style="text-align:right; font-size:11px;">
+                        <div><strong>ARPOL CONFORTO TÉRMICO</strong></div>
+                        <div>Emissão: ${agora}</div>
+                    </div>
+                </div>
+                ${document.getElementById('pane-relatorios').innerHTML}
+            `;
+            const tb = body.querySelector('.btn-toolbar');
+            if (tb) tb.remove();
+            
+            modal.style.display = 'flex';
+        }
+
+        function fecharModalPreview() {
+            document.getElementById('modal-preview').style.display = 'none';
+        }
+
+        function gerarPdfRelatorio() {
+            const elData = document.getElementById('print-data-emissao');
+            if (elData) {
+                elData.innerText = new Date().toLocaleDateString('pt-BR') + ' ' + new Date().toLocaleTimeString('pt-BR');
+            }
+            fecharModalPreview();
+            window.print();
+        }
+
+        carregarDadosSupabase();
+
+        // Escuta atualizações automáticas em tempo real
+        supabaseClient
+            .channel('mudancas-estoque')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, () => {
+                carregarDadosSupabase();
+            })
+            .subscribe();
+    </script>
+</body>
+</html>
