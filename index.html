@@ -731,14 +731,32 @@
             window.print();
         }
 
+        // 1. Carrega os dados iniciais
         carregarDadosSupabase();
 
-        supabaseClient
-            .channel('mudancas-estoque')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, () => {
-                carregarDadosSupabase();
-            })
-            .subscribe();
+        // 2. Configura a escuta em tempo real CORRETA para atualizar o celular e o PC
+        const canalEstoque = supabaseClient.channel('custom-all-channel')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'estoque' },
+                (payload) => {
+                    console.log('Mudança recebida na nuvem!', payload);
+                    // Quando a nuvem avisa que mudou, recarrega os dados para a tela
+                    carregarDadosSupabase();
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'historico_movimentacoes' },
+                (payload) => {
+                    carregarDadosSupabase();
+                }
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('✅ Sincronização em tempo real ativada com sucesso!');
+                }
+            });
     </script>
 </body>
 </html>
