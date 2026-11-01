@@ -153,6 +153,21 @@
             font-weight: 600;
             cursor: pointer;
         }
+        .btn-del-item {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fca5a5;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-del-item:hover {
+            background: #ef4444;
+            color: white;
+        }
 
         .table-responsive {
             width: 100%;
@@ -203,7 +218,7 @@
         }
         .btn-action.out { background: #495057; }
 
-        /* MODAL DE CADASTRO COMPLETO */
+        /* MODAIS */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -230,9 +245,7 @@
             border-bottom: 2px solid var(--primary-light);
             padding-bottom: 6px;
         }
-        .form-group {
-            margin-bottom: 12px;
-        }
+        .form-group { margin-bottom: 12px; }
         .form-group label {
             display: block;
             font-size: 11px;
@@ -252,9 +265,12 @@
         .form-row { display: flex; gap: 8px; }
         .form-col { flex: 1; }
 
+        /* REGRAS DE IMPRESSÃO / SALVAR EM PDF */
         @media print {
             body { background: white !important; padding: 0 !important; color: black !important; }
             .status-bar, header, .main-nav, #pane-estoque, .btn-toolbar, .no-print, .modal-overlay { display: none !important; }
+            /* Oculta os botões e coluna de exclusão no PDF */
+            .col-excluir, .btn-del-item, .th-excluir { display: none !important; }
             .content-container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
             #pane-relatorios { display: block !important; }
             .table-responsive { overflow: visible !important; }
@@ -272,6 +288,7 @@
         <span id="sync-status">🔄 Conectando...</span>
     </div>
 
+    <!-- CABEÇALHO OFICIAL EXCLUSIVO PARA O PDF -->
     <div class="print-only-header">
         <div style="display: flex; align-items: center; gap: 10px;">
             <img src="logo-oficial.jpg" alt="ARPOL" style="height: 48px; width: auto; object-fit: contain;">
@@ -331,18 +348,18 @@
         <div id="pane-relatorios" class="tab-pane" style="display: none;">
             <div class="section-card no-print btn-toolbar" style="display: flex; justify-content: space-between; align-items: center; background: #e8f5e9; border: 1px solid #c3e6cb; flex-wrap: wrap; gap: 8px;">
                 <div>
-                    <strong style="color: #0f5132;">Exportação do Relatório</strong>
-                    <div style="font-size: 11px; color: #475569;">Documento em formato A4 para impressão ou PDF</div>
+                    <strong style="color: #0f5132;">Exportação do Relatório Operacional</strong>
+                    <div style="font-size: 11px; color: #475569;">Documento em formato A4 para envio formal ao cliente/hospital</div>
                 </div>
-                <div style="display: flex; gap: 6px;">
-                    <button class="btn-blue" onclick="visualizarRelatorioModal()">👁️ Ver</button>
-                    <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ PDF / Imprimir</button>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <button class="btn-blue" onclick="visualizarRelatorioModal()">👁️ Ver Relatório</button>
+                    <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ Salvar em PDF</button>
                 </div>
             </div>
 
             <!-- Peças Abaixo do Mínimo -->
             <div class="section-card" style="border-left: 4px solid var(--danger);">
-                <h3 style="color: var(--danger); margin-bottom: 10px; font-size: 14px;">⚠️ Peças Abaixo do Estoque Mínimo (Reposição)</h3>
+                <h3 style="color: var(--danger); margin-bottom: 10px; font-size: 14px;">⚠️ Peças Abaixo do Estoque Mínimo (Reposição Urgente)</h3>
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -361,8 +378,9 @@
 
             <!-- Histórico de Entradas e Saídas -->
             <div class="section-card">
-                <div style="margin-bottom: 10px;">
-                    <h3 style="color: var(--primary); font-size: 14px;">📋 Histórico de Movimentações</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="color: var(--primary); font-size: 14px;">📋 Histórico de Movimentações (Entradas e Saídas)</h3>
+                    <button class="btn-del-item no-print" onclick="limparTodoHistorico()" style="font-size: 11px;">🗑️ Limpar Todos os Testes</button>
                 </div>
                 <div class="table-responsive">
                     <table>
@@ -374,6 +392,7 @@
                                 <th>Descrição</th>
                                 <th style="text-align: center;">Qtd</th>
                                 <th>Responsável</th>
+                                <th class="th-excluir" style="text-align: center; width: 60px;">Ação</th>
                             </tr>
                         </thead>
                         <tbody id="lista-historico-movimentacoes"></tbody>
@@ -383,7 +402,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CADASTRO COMPLETO (TUDO NA MESMA JANELA) -->
+    <!-- MODAL DE CADASTRO COMPLETO -->
     <div id="modal-cadastro" class="modal-overlay">
         <div class="modal-card">
             <div class="modal-title">Cadastrar Novo Item no Estoque</div>
@@ -416,11 +435,11 @@
 
     <!-- MODAL DE PRÉ-VISUALIZAÇÃO A4 -->
     <div id="modal-preview" class="modal-overlay">
-        <div class="modal-card" style="max-width: 800px; max-height: 85vh; overflow-y: auto;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="font-size: 14px;">Visualização para Impressão</h3>
+        <div class="modal-card" style="max-width: 820px; max-height: 85vh; overflow-y: auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                <h3 style="font-size: 14px;">Pré-visualização do Relatório (Como sairá impresso)</h3>
                 <div style="display: flex; gap: 6px;">
-                    <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ Imprimir / Salvar PDF</button>
+                    <button class="btn-gold" onclick="gerarPdfRelatorio()">🖨️ Salvar em PDF</button>
                     <button class="btn-add" style="background: #64748b;" onclick="fecharModalPreview()">Fechar</button>
                 </div>
             </div>
@@ -462,7 +481,7 @@
                     .from('historico_movimentacoes')
                     .select('*')
                     .order('id', { ascending: false })
-                    .limit(30);
+                    .limit(50);
 
                 if (!errHist && dataHist) {
                     historico = dataHist;
@@ -476,7 +495,7 @@
 
             } catch (err) {
                 console.error(err);
-                statusEl.innerText = "🟡 Modo Offline (Local)";
+                statusEl.innerText = "🟡 Modo Local";
                 estoque = JSON.parse(localStorage.getItem('arpol_estoque_db')) || [];
                 historico = JSON.parse(localStorage.getItem('arpol_historico_movimentos') || '[]');
                 renderizarTabela();
@@ -495,6 +514,35 @@
             try {
                 await supabaseClient.from('historico_movimentacoes').insert([novoMov]);
             } catch(e) { console.warn(e); }
+        }
+
+        // Função para excluir uma linha de teste individual
+        async function excluirItemHistorico(index) {
+            if (!confirm("Deseja realmente remover esta movimentação de teste do relatório?")) return;
+            
+            const movRemovido = historico[index];
+            historico.splice(index, 1);
+            localStorage.setItem('arpol_historico_movimentos', JSON.stringify(historico));
+            atualizarRelatorioPecas();
+
+            try {
+                if (movRemovido && movRemovido.id) {
+                    await supabaseClient.from('historico_movimentacoes').delete().match({ id: movRemovido.id });
+                }
+            } catch (e) { console.warn(e); }
+        }
+
+        // Função para limpar todos os testes de uma vez só
+        async function limparTodoHistorico() {
+            if (!confirm("Tem certeza que deseja apagar todo o histórico de testes? O estoque de peças permanecerá intacto.")) return;
+            
+            historico = [];
+            localStorage.setItem('arpol_historico_movimentos', JSON.stringify([]));
+            atualizarRelatorioPecas();
+
+            try {
+                await supabaseClient.from('historico_movimentacoes').delete().neq('id', 0);
+            } catch (e) { console.warn(e); }
         }
 
         async function alterarQuantidade(index, delta) {
@@ -604,9 +652,9 @@
             }
 
             if (historico.length === 0) {
-                tabelaMovimentos.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 12px; color: #6c757d;">Nenhuma movimentação registrada.</td></tr>';
+                tabelaMovimentos.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 12px; color: #6c757d;">Nenhuma movimentação registrada.</td></tr>';
             } else {
-                tabelaMovimentos.innerHTML = historico.slice(0, 20).map(m => `
+                tabelaMovimentos.innerHTML = historico.map((m, idx) => `
                     <tr>
                         <td style="color: #6c757d; font-size: 11px;">${m.dataHora}</td>
                         <td>
@@ -618,6 +666,9 @@
                         <td>${m.desc}</td>
                         <td style="text-align: center; font-weight: bold;">${m.qtd}</td>
                         <td style="font-size: 11px;">${m.usuario}</td>
+                        <td class="col-excluir" style="text-align: center;">
+                            <button class="btn-del-item" onclick="excluirItemHistorico(${idx})" title="Excluir este teste">🗑️</button>
+                        </td>
                     </tr>
                 `).join('');
             }
@@ -651,7 +702,7 @@
             
             body.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #0F5132; padding-bottom:8px; margin-bottom:14px;">
-                    <img src="logo-oficial.jpg" style="height:36px;">
+                    <img src="logo-oficial.jpg" style="height:38px;">
                     <div style="text-align:right; font-size:11px;">
                         <div><strong>ARPOL CONFORTO TÉRMICO</strong></div>
                         <div>Emissão: ${agora}</div>
@@ -659,8 +710,10 @@
                 </div>
                 ${document.getElementById('pane-relatorios').innerHTML}
             `;
+            // Remove botões internos e coluna de lixeira na visualização de impressão
             const tb = body.querySelector('.btn-toolbar');
             if (tb) tb.remove();
+            body.querySelectorAll('.col-excluir, .th-excluir, .btn-del-item').forEach(el => el.remove());
             
             modal.style.display = 'flex';
         }
@@ -680,7 +733,6 @@
 
         carregarDadosSupabase();
 
-        // Escuta atualizações automáticas em tempo real
         supabaseClient
             .channel('mudancas-estoque')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'estoque' }, () => {
